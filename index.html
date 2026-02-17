@@ -1,101 +1,100 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg:#07080b;
-      --panel: rgba(255,255,255,.05);
-      --stroke: rgba(255,255,255,.10);
-      --text:#e9ecf1;
-      --muted:#a7afbf;
-      --shadow: 0 24px 80px rgba(0,0,0,.65);
-      --accent:#8b5cf6;
-      --good:#22c55e;
-      --warn:#f59e0b;
-      --bad:#ef4444;
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+body{
+  margin:0;
+  font-family:Inter,system-ui;
+  background:radial-gradient(circle at 70% 0%,#1a0b2e,#05070a 60%);
+  color:#fff;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.card{
+  width:420px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;
+  padding:28px;
+  backdrop-filter:blur(20px);
+}
+.avatar{
+  width:90px;height:90px;
+  border-radius:20px;
+  overflow:hidden;
+  margin-bottom:18px;
+}
+.avatar img{width:100%;height:100%;object-fit:cover}
+h1{margin:0 0 6px;font-weight:800}
+.status{
+  display:flex;align-items:center;gap:8px;
+  font-size:14px;color:#aaa;margin-bottom:14px;
+}
+.dot{width:10px;height:10px;border-radius:50%}
+.online{background:#22c55e}
+.idle{background:#f59e0b}
+.dnd{background:#ef4444}
+.offline{background:#64748b}
+.views{font-size:13px;color:#aaa;margin-top:14px}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="avatar"><img id="pfp"></div>
+  <h1 id="name">Loading...</h1>
+  <div class="status">
+    <div id="dot" class="dot offline"></div>
+    <span id="status">offline</span>
+  </div>
+  <div id="activity"></div>
+  <div class="views">Views: <span id="views">...</span></div>
+</div>
+
+<script>
+const USER_ID = "PUT_YOUR_DISCORD_ID_HERE";
+const $ = id => document.getElementById(id);
+
+// Views via CountAPI
+fetch("https://api.countapi.xyz/hit/my-bio-vercel/views")
+  .then(r=>r.json())
+  .then(d=>$("views").textContent=d.value);
+
+// Discord via Lanyard
+async function load(){
+  const r = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`);
+  const j = await r.json();
+  const d = j.data;
+  if(!d) return;
+
+  const u = d.discord_user;
+  $("name").textContent = u.global_name || u.username;
+
+  if(u.avatar){
+    $("pfp").src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=256`;
+  }
+
+  const status = d.discord_status;
+  $("status").textContent = status;
+  $("dot").className = "dot " + status;
+
+  if(d.activities.length){
+    const act = d.activities.find(a=>a.name);
+    if(act){
+      $("activity").textContent = "Playing: " + act.name;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(1200px 600px at 70% 0%, rgba(139,92,246,.18), transparent 55%),
-        radial-gradient(900px 500px at 10% 20%, rgba(34,197,94,.10), transparent 55%),
-        var(--bg);
-      min-height:100vh;
-      display:grid;
-      place-items:center;
-      padding:40px 18px;
-    }
-    .card{
-      width:min(980px,100%);
-      border:1px solid var(--stroke);
-      background: linear-gradient(180deg, var(--panel), rgba(255,255,255,.03));
-      border-radius:24px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    header{
-      display:flex; gap:18px; align-items:center;
-      padding:28px 28px 16px;
-    }
-    .avatar{
-      width:78px; height:78px; border-radius:22px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      overflow:hidden;
-      flex:0 0 auto;
-    }
-    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
-    .meta{flex:1;min-width:0}
-    h1{margin:0;font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .tag{margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
-    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 10px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      font-size:12px;color:var(--muted);
-    }
-    .dot{width:9px;height:9px;border-radius:50%}
-    .online{background:var(--good)}
-    .idle{background:var(--warn)}
-    .dnd{background:var(--bad)}
-    .offline{background:rgba(148,163,184,.55)}
-    main{
-      display:grid;
-      grid-template-columns: 1.2fr .9fr;
-      gap:16px;
-      padding:0 28px 26px;
-    }
-    .panel{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      border-radius:18px;
-      padding:16px;
-    }
-    .panel h2{margin:0 0 10px;font-size:13px;letter-spacing:.25px;text-transform:uppercase}
-    .panel p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
-    .links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-    a.btn{
-      text-decoration:none;color:var(--text);
-      display:inline-flex;align-items:center;gap:10px;
-      padding:10px 12px;border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      font-weight:700;font-size:13px;
-      transition:.12s ease;
-    }
-    a.btn:hover{transform:translateY(-1px);border-color:rgba(139,92,246,.45);background:rgba(139,92,246,.08)}
-    .activity{display:flex;gap:12px;align-items:center}
-    .art{width:54px;height:54px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);overflow:hidden;display:grid;place-items:center}
-    .art img{width:100%;height:100%;object-fit:cover;display:block}
-    .line1{font-weight:800;font-size:13px;white-space:nowrap;overfl
+  }
+}
+
+load();
+setInterval(load,15000);
+</script>
+
+</body>
+</html>
