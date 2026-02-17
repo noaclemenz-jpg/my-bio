@@ -62,7 +62,8 @@ const USER_ID = "1377987625129869373";
 const $ = id => document.getElementById(id);
 
 // Views via CountAPI
-fetch("https://api.countapi.xyz/hit/my-bio-vercel/views")
+const r = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`);
+
   .then(r=>r.json())
   .then(d=>$("views").textContent=d.value);
 
@@ -98,4 +99,5 @@ setInterval(load,15000);
 
 </body>
 </html>
+
 
