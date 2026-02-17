@@ -65,6 +65,7 @@
     mix-blend-mode: overlay;
   }
 
+  /* ===== Center ===== */
   .stage{
     min-height:100%;
     display:flex;
@@ -119,6 +120,15 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: var(--shadow);
+    transform: translateY(10px);
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  body.entered .window{
+    opacity:1;
+    transform: translateY(0);
+    pointer-events:auto;
   }
 
   .titlebar{
@@ -274,43 +284,46 @@
   }
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
 
-  /* Hidden audio */
   audio{ display:none; }
 
-  /* Minimal unlock badge (only if autoplay blocked) */
-  .audioBadge{
+  /* ===== click-to-enter overlay ===== */
+  .gate{
     position:fixed;
-    left:50%;
-    bottom:18px;
-    transform:translateX(-50%);
-    z-index:50;
-    padding:10px 12px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.14);
-    background: rgba(18,20,28,.55);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    color:rgba(242,246,255,.92);
-    font-size:12px;
-    box-shadow: 0 14px 60px rgba(0,0,0,.55);
-    display:none;
-    user-select:none;
-  }
-  .audioBadge button{
-    all:unset;
+    inset:0;
+    display:grid;
+    place-items:center;
+    z-index:100;
     cursor:pointer;
-    margin-left:10px;
-    padding:6px 10px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.16);
-    background: rgba(255,255,255,.06);
-    font-weight:900;
+    transition: opacity .35s ease;
+    background: rgba(0,0,0,.18);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
   }
-  .audioBadge button:hover{background: rgba(255,255,255,.10)}
+  body.entered .gate{
+    opacity:0;
+    pointer-events:none;
+  }
+
+  .gateText{
+    font-size:26px;
+    font-weight:800;
+    color: rgba(242,246,255,.95);
+    text-shadow: 0 10px 30px rgba(0,0,0,.55);
+    letter-spacing:.2px;
+  }
+  .gateText .dots{
+    opacity:.9;
+    animation: dots 1.2s infinite;
+  }
+  @keyframes dots{
+    0%, 20% { opacity:.3 }
+    50% { opacity:1 }
+    100% { opacity:.3 }
+  }
 
   @media (max-width: 520px){
+    .gateText{font-size:22px}
     .content{padding:22px 18px 18px}
-    .tilt{width:min(860px,100%)}
     .pfp{width:96px;height:96px}
     h1{font-size:22px}
   }
@@ -331,6 +344,11 @@
 </div>
 <div class="bgOverlay" aria-hidden="true"></div>
 <div class="noise" aria-hidden="true"></div>
+
+<!-- Click-to-enter -->
+<div class="gate" id="gate" aria-label="click to enter">
+  <div class="gateText">click to enter<span class="dots">...</span></div>
+</div>
 
 <div class="stage">
   <div class="tilt" id="tilt">
@@ -389,14 +407,9 @@
 </div>
 
 <!-- MP3 audio (hidden) -->
-<audio id="bgMusic" autoplay loop preload="auto">
-  <!-- Put the mp3 in your repo as /space-song-lyrics.mp3 -->
+<audio id="bgMusic" loop preload="auto">
   <source src="/space-song-lyrics.mp3" type="audio/mpeg">
 </audio>
-
-<div class="audioBadge" id="audioBadge">
-  Audio blocked — <button id="audioBtn">Enable</button>
-</div>
 
 <script>
   const USER_ID = "1377987625129869373";
@@ -405,7 +418,7 @@
 
   const $ = (id) => document.getElementById(id);
 
-  // hover tilt + spotlight follow mouse
+  // hover tilt + spotlight
   const tilt = $("tilt");
   const maxTilt = 7;
 
@@ -495,39 +508,37 @@
     }
   }
 
-  // ===== MP3 autoplay handling =====
+  // MP3 audio
   const audio = $("bgMusic");
-  const badge = $("audioBadge");
-  const btn = $("audioBtn");
+  audio.volume = 0.55; // a bit quieter
 
-  // set volume a bit lower (you asked earlier "bisschen leiser")
-  audio.volume = 0.55;
+  async function enter(){
+    if(document.body.classList.contains("entered")) return;
+    document.body.classList.add("entered");
 
-  async function tryPlay(){
     try{
-      await audio.play();
-      badge.style.display = "none";
-      return true;
+      await audio.play(); // user gesture => should work
     }catch{
-      badge.style.display = "block";
-      return false;
+      // If a browser still blocks it, user can click again (rare)
     }
+
+    // load data after enter for cleaner feel
+    loadViews();
+    loadDiscord();
   }
 
-  btn.addEventListener("click", () => { tryPlay(); });
-  window.addEventListener("pointerdown", () => { tryPlay(); }, { once:true, passive:true });
+  // gate click
+  $("gate").addEventListener("click", enter);
 
-  // init
+  // init small stuff
   $("year").textContent = new Date().getFullYear();
   setClock();
   setInterval(setClock, 10000);
 
-  loadViews();
-  loadDiscord();
-  setInterval(loadDiscord, 15000);
-
-  // attempt autoplay
-  tryPlay();
+  // keep discord refreshing AFTER enter
+  setInterval(() => {
+    if(document.body.classList.contains("entered")) loadDiscord();
+  }, 15000);
 </script>
 
 </body>
