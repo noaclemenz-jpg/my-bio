@@ -6,303 +6,323 @@
 <title>bio</title>
 
 <style>
-  :root{
-    --text:#f2f6ff;
-    --muted:#a8b3c7;
+:root{
+  --text:#f2f6ff;
+  --muted:#a8b3c7;
+  --panel: rgba(18,20,28,.62);
+  --stroke: rgba(255,255,255,.12);
 
-    --panel: rgba(18,20,28,.62);
-    --panel2: rgba(18,20,28,.44);
-    --stroke: rgba(255,255,255,.12);
+  --blue:#4aa3ff;
+  --purple:#a78bfa;
 
-    --blue:#4aa3ff;
-    --purple:#a78bfa;
+  --green:#22c55e;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --gray:#64748b;
 
-    --green:#22c55e;
-    --amber:#f59e0b;
-    --red:#ef4444;
-    --gray:#64748b;
+  --radius:12px;
+  --shadow: 0 25px 90px rgba(0,0,0,.72);
+}
 
-    --radius:12px;
-    --shadow: 0 25px 80px rgba(0,0,0,.72);
-  }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:#05060a;
+  overflow-x:hidden;
+}
 
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
-    color:var(--text);
-    background:#05060a;
-    overflow-x:hidden;
-  }
+/* YouTube background (less blur) */
+.bg{position:fixed; inset:0; z-index:-3; overflow:hidden;}
+.bg iframe{
+  position:absolute; top:50%; left:50%;
+  width:160vw; height:90vw;
+  min-width:160vh; min-height:90vh;
+  transform:translate(-50%,-50%);
+  filter: blur(6px);
+  opacity:.50;
+  pointer-events:none;
+}
+.bgOverlay{
+  position:fixed; inset:0; z-index:-2;
+  background:
+    radial-gradient(1000px 600px at 15% 15%, rgba(74,163,255,.10), transparent 60%),
+    radial-gradient(900px 700px at 85% 25%, rgba(167,139,250,.10), transparent 60%),
+    linear-gradient(180deg, rgba(10,12,18,.55), rgba(5,6,10,.72));
+}
+.noise{
+  pointer-events:none;
+  position:fixed; inset:0; z-index:-1;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
+  opacity:.045;
+  mix-blend-mode: overlay;
+}
 
-  /* ===== YouTube background (blurred) ===== */
-  .bg{
-    position:fixed; inset:0; z-index:-3; overflow:hidden;
-  }
-  .bg iframe{
-    position:absolute;
-    top:50%; left:50%;
-    width: 160vw;
-    height: 90vw;
-    min-width: 160vh;
-    min-height: 90vh;
-    transform: translate(-50%,-50%);
-    filter: blur(12px);
-    opacity:.40;
-    pointer-events:none;
-  }
-  .bgOverlay{
-    position:fixed; inset:0; z-index:-2;
-    background:
-      radial-gradient(1000px 600px at 15% 15%, rgba(74,163,255,.14), transparent 60%),
-      radial-gradient(900px 700px at 85% 25%, rgba(167,139,250,.14), transparent 60%),
-      radial-gradient(900px 700px at 60% 90%, rgba(34,197,94,.07), transparent 62%),
-      linear-gradient(180deg, rgba(10,12,18,.70), rgba(5,6,10,.86));
-  }
-  .noise{
-    pointer-events:none;
-    position:fixed; inset:0; z-index:-1;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
-    opacity:.05;
-    mix-blend-mode: overlay;
-  }
+.stage{
+  min-height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:30px 14px;
+}
 
-  /* ===== Center ===== */
-  .stage{
-    min-height:100%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:28px 14px;
-  }
+/* guns.lol-ish hover */
+.tilt{
+  width:min(780px, 100%); /* BIGGER */
+  transform-style:preserve-3d;
+  will-change:transform;
+  transition:transform .14s ease;
+  position:relative;
+}
+.tilt::before{
+  content:"";
+  position:absolute; inset:-2px;
+  border-radius: calc(var(--radius) + 2px);
+  background: radial-gradient(700px 360px at var(--mx,50%) var(--my,50%),
+    rgba(74,163,255,.20),
+    rgba(167,139,250,.10) 40%,
+    transparent 62%);
+  opacity:0;
+  transition: opacity .16s ease;
+  pointer-events:none;
+  filter: blur(2px);
+}
+.tilt::after{
+  content:"";
+  position:absolute; inset:-1px;
+  border-radius: calc(var(--radius) + 1px);
+  background: linear-gradient(120deg,
+    rgba(74,163,255,0),
+    rgba(74,163,255,.20),
+    rgba(167,139,250,.16),
+    rgba(74,163,255,0));
+  opacity:0;
+  transition: opacity .16s ease;
+  pointer-events:none;
+  filter: blur(10px);
+}
+.tilt:hover::before,.tilt:hover::after{opacity:1}
 
-  /* ===== guns.lol-ish hover: tilt + spotlight + glow ===== */
-  .tilt{
-    width:min(520px, 100%);
-    transform-style:preserve-3d;
-    will-change:transform;
-    transition:transform .14s ease;
-    position:relative;
-  }
-  .tilt::before{
-    content:"";
-    position:absolute; inset:-2px;
-    border-radius: calc(var(--radius) + 2px);
-    background: radial-gradient(520px 280px at var(--mx,50%) var(--my,50%),
-      rgba(74,163,255,.22),
-      rgba(167,139,250,.10) 40%,
-      transparent 62%);
-    opacity:0;
-    transition: opacity .16s ease;
-    pointer-events:none;
-    filter: blur(2px);
-  }
-  .tilt::after{
-    content:"";
-    position:absolute; inset:-1px;
-    border-radius: calc(var(--radius) + 1px);
-    background: linear-gradient(120deg,
-      rgba(74,163,255,0),
-      rgba(74,163,255,.22),
-      rgba(167,139,250,.18),
-      rgba(34,197,94,.12),
-      rgba(74,163,255,0));
-    opacity:0;
-    transition: opacity .16s ease;
-    pointer-events:none;
-    filter: blur(10px);
-  }
-  .tilt:hover::before,.tilt:hover::after{opacity:1}
+/* Win10 window */
+.window{
+  border-radius:var(--radius);
+  overflow:hidden;
+  border:1px solid var(--stroke);
+  background: linear-gradient(180deg, rgba(18,20,28,.70), rgba(18,20,28,.45));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
 
-  /* ===== Win10 window ===== */
-  .window{
-    border-radius:var(--radius);
-    overflow:hidden;
-    border:1px solid var(--stroke);
-    background: linear-gradient(180deg, rgba(18,20,28,.72), rgba(18,20,28,.48));
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: var(--shadow);
-    transform: translateZ(0);
-  }
-  .titlebar{
-    height:40px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:0 10px 0 12px;
-    background:rgba(255,255,255,.05);
-    border-bottom:1px solid rgba(255,255,255,.08);
-    user-select:none;
-  }
-  .title{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:13px;
-    font-weight:600;
-    color:rgba(242,246,255,.92);
-  }
-  .icon{
-    width:14px; height:14px; border-radius:4px;
-    background:linear-gradient(135deg,var(--blue),var(--purple));
-  }
-  .winbtns{display:flex}
-  .winbtn{
-    width:45px;
-    text-align:center;
-    padding:6px 0;
-    border-left:1px solid rgba(255,255,255,.06);
-    color:rgba(242,246,255,.85);
-  }
-  .winbtn:hover{background:rgba(255,255,255,.08)}
-  .winbtn.close:hover{background:rgba(239,68,68,.25)}
+.titlebar{
+  height:40px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 10px 0 12px;
+  background:rgba(255,255,255,.05);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  user-select:none;
+}
+.title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  font-weight:600;
+  color:rgba(242,246,255,.92);
+}
+.icon{
+  width:14px;height:14px;border-radius:4px;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+}
+.winbtns{display:flex}
+.winbtn{
+  width:45px;
+  text-align:center;
+  padding:6px 0;
+  border-left:1px solid rgba(255,255,255,.06);
+  color:rgba(242,246,255,.85);
+}
+.winbtn:hover{background:rgba(255,255,255,.08)}
+.winbtn.close:hover{background:rgba(239,68,68,.25)}
 
-  .content{padding:18px}
+.content{padding:22px} /* a bit roomier */
 
-  /* guns.lol-ish layout: avatar + name + pills + socials */
-  .top{
-    display:flex;
-    gap:14px;
-    align-items:center;
-  }
-  .pfp{
-    width:78px;height:78px;
-    border-radius:10px;
-    overflow:hidden;
-    border:1px solid rgba(255,255,255,.15);
-    background:rgba(255,255,255,.03);
-    flex:0 0 auto;
-  }
-  .pfp img{width:100%;height:100%;object-fit:cover;display:block}
+.top{
+  display:flex;
+  gap:16px;
+  align-items:center;
+}
+.pfp{
+  width:92px;height:92px; /* bigger avatar */
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.03);
+  flex:0 0 auto;
+}
+.pfp img{width:100%;height:100%;object-fit:cover;display:block}
 
-  .meta{min-width:0; flex:1}
-  .nameRow{
-    display:flex;
-    gap:10px;
-    align-items:baseline;
-    flex-wrap:wrap;
-  }
-  .name{
-    font-size:18px;
-    font-weight:800;
-    line-height:1.2;
-    margin:0;
-  }
-  .handle{
-    font-size:12.5px;
-    color:var(--muted);
-    font-weight:600;
-  }
-  .tagline{
-    margin-top:6px;
-    font-size:13px;
-    color:var(--muted);
-  }
+.meta{min-width:0; flex:1}
+.nameRow{
+  display:flex;
+  gap:12px;
+  align-items:baseline;
+  flex-wrap:wrap;
+}
+.name{
+  font-size:22px;
+  font-weight:800;
+  margin:0;
+  line-height:1.15;
+}
+.handle{
+  font-size:13px;
+  color:var(--muted);
+  font-weight:600;
+}
+.tagline{
+  margin-top:8px;
+  font-size:14px;
+  color:var(--muted);
+}
 
-  .pills{
-    display:flex;
-    gap:10px;
-    margin-top:12px;
-    flex-wrap:wrap;
-  }
-  .pill{
-    padding:7px 10px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.10);
-    background:rgba(255,255,255,.04);
-    font-size:12px;
-    color:rgba(168,179,199,.96);
-    display:flex;
-    gap:8px;
-    align-items:center;
-    position:relative;
-    overflow:hidden;
-    transition: transform .12s ease, border-color .12s ease, background .12s ease;
-  }
-  .pill::before{
-    content:"";
-    position:absolute;
-    top:-40%;
-    left:-70%;
-    width:70%;
-    height:200%;
-    transform: rotate(18deg);
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
-    opacity:0;
-    transition: left .38s ease, opacity .18s ease;
-    pointer-events:none;
-  }
-  .pill:hover{
-    transform: translateY(-1px);
-    border-color: rgba(74,163,255,.35);
-    background: rgba(74,163,255,.06);
-  }
-  .pill:hover::before{opacity:1; left:120%}
+.pills{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+  flex-wrap:wrap;
+}
+.pill{
+  padding:8px 11px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+  font-size:12.5px;
+  color:rgba(168,179,199,.96);
+  display:flex;
+  gap:8px;
+  align-items:center;
+  position:relative;
+  overflow:hidden;
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
+}
+.pill::before{
+  content:"";
+  position:absolute;
+  top:-40%;
+  left:-70%;
+  width:70%;
+  height:200%;
+  transform: rotate(18deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  opacity:0;
+  transition: left .38s ease, opacity .18s ease;
+  pointer-events:none;
+}
+.pill:hover{
+  transform: translateY(-1px);
+  border-color: rgba(74,163,255,.35);
+  background: rgba(74,163,255,.06);
+}
+.pill:hover::before{opacity:1; left:120%}
 
-  .sDot{width:8px;height:8px;border-radius:50%;background:var(--gray)}
-  .sDot.online{background:var(--green)}
-  .sDot.idle{background:var(--amber)}
-  .sDot.dnd{background:var(--red)}
-  .sDot.offline{background:var(--gray)}
+.sDot{width:9px;height:9px;border-radius:50%;background:var(--gray)}
+.sDot.online{background:var(--green)}
+.sDot.idle{background:var(--amber)}
+.sDot.dnd{background:var(--red)}
+.sDot.offline{background:var(--gray)}
 
-  .links{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:14px;
-  }
-  .btn{
-    display:inline-flex;
-    align-items:center;
-    padding:9px 11px;
-    border-radius:10px;
-    border:1px solid rgba(255,255,255,.12);
-    background:rgba(255,255,255,.03);
-    text-decoration:none;
-    color:var(--text);
-    font-size:12.5px;
-    font-weight:700;
-    transition: transform .12s ease, border-color .12s ease, background .12s ease;
-  }
-  .btn:hover{
-    transform: translateY(-1px);
-    border-color: rgba(255,255,255,.22);
-    background: rgba(255,255,255,.07);
-  }
+.links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:16px;
+}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.03);
+  text-decoration:none;
+  color:var(--text);
+  font-size:12.5px;
+  font-weight:700;
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
+}
+.btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.22);
+  background: rgba(255,255,255,.07);
+}
 
-  .footer{
-    padding:10px 15px;
-    font-size:11px;
-    border-top:1px solid rgba(255,255,255,.08);
-    display:flex;
-    justify-content:space-between;
-    color:var(--muted);
-    background:rgba(255,255,255,.03);
-  }
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+.footer{
+  padding:10px 15px;
+  font-size:11px;
+  border-top:1px solid rgba(255,255,255,.08);
+  display:flex;
+  justify-content:space-between;
+  color:var(--muted);
+  background:rgba(255,255,255,.03);
+}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
 
-  /* Hidden Spotify (not visible) */
-  .spotifyHidden{
-    position:absolute;
-    width:1px; height:1px;
-    left:-9999px; top:-9999px;
-    opacity:0;
-    pointer-events:none;
-  }
+/* Hidden Spotify iframe */
+.spotifyHidden{
+  position:absolute;
+  width:1px; height:1px;
+  left:-9999px; top:-9999px;
+  opacity:0;
+  pointer-events:none;
+}
 
-  /* mobile tweaks */
-  @media (max-width: 560px){
-    .top{align-items:flex-start}
-    .pfp{width:72px;height:72px}
-  }
+/* Tiny “tap to enable audio” badge (only shows until user interacts) */
+.audioBadge{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  z-index:50;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(18,20,28,.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color:rgba(242,246,255,.92);
+  font-size:12px;
+  box-shadow: 0 14px 60px rgba(0,0,0,.55);
+  display:none;
+  user-select:none;
+}
+.audioBadge strong{font-weight:800}
+.audioBadge button{
+  all:unset;
+  cursor:pointer;
+  margin-left:10px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.06);
+  font-weight:800;
+}
+.audioBadge button:hover{background: rgba(255,255,255,.10)}
+
+@media (max-width: 560px){
+  .top{align-items:flex-start}
+  .pfp{width:84px;height:84px}
+  .name{font-size:20px}
+}
 </style>
 </head>
 
 <body>
 
-<!-- YouTube background: still muted, autoplay, loop -->
 <div class="bg" aria-hidden="true">
   <iframe
     src="https://www.youtube.com/embed/Ulm_Z646eBg?autoplay=1&mute=1&controls=0&rel=0&playsinline=1&loop=1&playlist=Ulm_Z646eBg&modestbranding=1&iv_load_policy=3&disablekb=1"
@@ -359,7 +379,6 @@
             </div>
 
             <div class="links">
-              <!-- EDIT THESE -->
               <a class="btn" href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
               <a class="btn" href="https://x.com" target="_blank" rel="noreferrer">X</a>
               <a class="btn" href="mailto:you@example.com">Mail</a>
@@ -377,7 +396,7 @@
   </div>
 </div>
 
-<!-- Hidden Spotify embed: not visible -->
+<!-- Hidden Spotify embed -->
 <iframe
   id="spotifyEmbed"
   class="spotifyHidden"
@@ -388,18 +407,21 @@
   aria-hidden="true">
 </iframe>
 
+<!-- Minimal “enable audio” badge -->
+<div class="audioBadge" id="audioBadge">
+  <strong>Audio</strong> is blocked by your browser.
+  <button id="audioBtn">Enable</button>
+</div>
+
 <script>
-  // ===== CONFIG =====
   const USER_ID = "1377987625129869373";
   const COUNT_NAMESPACE = "my-bio-khaki";
   const COUNT_KEY = "views";
-
-  // Your requested track (fallback)
   const FALLBACK_TRACK_ID = "1ZgMsA55GIY7ICkQh5MILA";
 
   const $ = (id) => document.getElementById(id);
 
-  // ===== guns.lol-ish tilt + spotlight =====
+  // Hover tilt + spotlight
   const tilt = $("tilt");
   const maxTilt = 7;
 
@@ -429,15 +451,13 @@
     tilt.style.setProperty("--my", "50%");
   });
 
-  // ===== clock =====
+  // clock
   function setClock(){
     const d = new Date();
-    const hh = String(d.getHours()).padStart(2,"0");
-    const mm = String(d.getMinutes()).padStart(2,"0");
-    $("clock").textContent = `${hh}:${mm}`;
+    $("clock").textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
   }
 
-  // ===== views =====
+  // views
   async function loadViews(){
     try{
       const r = await fetch(`https://api.countapi.xyz/hit/${encodeURIComponent(COUNT_NAMESPACE)}/${encodeURIComponent(COUNT_KEY)}`, { cache:"no-store" });
@@ -451,56 +471,58 @@
     }
   }
 
-  // ===== discord =====
-  function msPing(start){
-    return Math.max(0, Math.round(performance.now() - start));
-  }
-
+  // discord
+  function msPing(start){ return Math.max(0, Math.round(performance.now() - start)); }
   function setStatus(status){
     const s = status || "offline";
     $("statusText").textContent = s;
     $("statusDot").className = "sDot " + s;
   }
 
-  // ===== hidden spotify (autoplay attempt, no visible UI) =====
+  // Hidden Spotify: don't restart unless track changes
   let currentEmbedTrackId = FALLBACK_TRACK_ID;
-
-  function ensureHiddenSpotifyTrack(trackId){
+  function ensureTrack(trackId){
     const embed = $("spotifyEmbed");
-    const nextId = trackId || FALLBACK_TRACK_ID;
-    if(nextId !== currentEmbedTrackId){
-      currentEmbedTrackId = nextId;
-      embed.src = `https://open.spotify.com/embed/track/${nextId}?utm_source=generator&theme=0`;
+    const next = trackId || FALLBACK_TRACK_ID;
+    if(next !== currentEmbedTrackId){
+      currentEmbedTrackId = next;
+      embed.src = `https://open.spotify.com/embed/track/${next}?utm_source=generator&theme=0`;
     }
   }
 
-  // Autoplay helper:
-  // Some browsers block autoplay until user interacts. We “poke” it once on first click/tap.
-  let autoplayArmed = false;
-  function armAutoplayOnce(){
-    if(autoplayArmed) return;
-    autoplayArmed = true;
-    // reload same src once after interaction (helps autoplay)
+  // Autoplay reality: needs user gesture in most browsers.
+  // We show a tiny “Enable” badge if we detect no gesture yet.
+  const badge = $("audioBadge");
+  const audioBtn = $("audioBtn");
+  let unlocked = false;
+
+  function unlockAudio(){
+    if(unlocked) return;
+    unlocked = true;
+    badge.style.display = "none";
+    // “poke” the embed once after gesture to encourage autoplay
     const embed = $("spotifyEmbed");
-    const src = embed.src;
-    embed.src = src;
-    window.removeEventListener("pointerdown", armAutoplayOnce);
+    embed.src = embed.src;
   }
-  window.addEventListener("pointerdown", armAutoplayOnce, { passive:true });
+
+  // Show badge after short delay (if no interaction)
+  setTimeout(()=>{ if(!unlocked) badge.style.display = "block"; }, 1200);
+
+  window.addEventListener("pointerdown", unlockAudio, { passive:true, once:true });
+  audioBtn.addEventListener("click", unlockAudio);
 
   async function loadDiscord(){
     const t0 = performance.now();
     try{
       const r = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`, { cache:"no-store" });
       $("ping").textContent = msPing(t0) + "ms";
-
       const j = await r.json();
       const d = j?.data;
       if(!d){
         $("name").textContent = "unknown";
         $("handle").textContent = "@discord";
         setStatus("offline");
-        ensureHiddenSpotifyTrack(FALLBACK_TRACK_ID);
+        ensureTrack(FALLBACK_TRACK_ID);
         return;
       }
 
@@ -517,15 +539,15 @@
 
       setStatus(d.discord_status || "offline");
 
-      // If Lanyard spotify exists and has track_id, follow it — otherwise use your chosen track
+      // keep your chosen track unless you're listening on spotify (then follow your current)
       if(d.spotify && d.spotify.track_id){
-        ensureHiddenSpotifyTrack(d.spotify.track_id);
-      } else {
-        ensureHiddenSpotifyTrack(FALLBACK_TRACK_ID);
+        ensureTrack(d.spotify.track_id);
+      }else{
+        ensureTrack(FALLBACK_TRACK_ID);
       }
     }catch{
       setStatus("offline");
-      ensureHiddenSpotifyTrack(FALLBACK_TRACK_ID);
+      ensureTrack(FALLBACK_TRACK_ID);
     }
   }
 
