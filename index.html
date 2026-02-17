@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>bio</title>
+<title>discord.exe</title>
 
 <style>
   :root{
@@ -36,7 +36,7 @@
     overflow-x:hidden;
   }
 
-  /* ===== YouTube background (muted, autoplay, loop) ===== */
+  /* ===== YouTube background ===== */
   .bg{ position:fixed; inset:0; z-index:-3; overflow:hidden; }
   .bg iframe{
     position:absolute;
@@ -140,6 +140,13 @@
     background:rgba(255,255,255,.05);
     border-bottom:1px solid rgba(255,255,255,.08);
     user-select:none;
+    gap:10px;
+  }
+  .titleLeft{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
   }
   .title{
     display:flex;
@@ -148,12 +155,15 @@
     font-size:13px;
     font-weight:600;
     color:rgba(242,246,255,.92);
+    white-space:nowrap;
   }
   .icon{
     width:14px;height:14px;border-radius:4px;
     background:linear-gradient(135deg,var(--blue),var(--purple));
+    flex:0 0 auto;
   }
-  .winbtns{display:flex}
+
+  .winbtns{display:flex; flex:0 0 auto;}
   .winbtn{
     width:45px;
     text-align:center;
@@ -163,6 +173,76 @@
   }
   .winbtn:hover{background:rgba(255,255,255,.08)}
   .winbtn.close:hover{background:rgba(239,68,68,.25)}
+
+  /* ===== Win10 volume widget (like screenshot) ===== */
+  .volWidget{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 10px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(18,20,28,.35);
+    box-shadow: 0 10px 40px rgba(0,0,0,.35);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    max-width: 280px;
+  }
+  .volBtn{
+    width:26px; height:26px;
+    border-radius:9px;
+    display:grid;
+    place-items:center;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.05);
+    cursor:pointer;
+    flex:0 0 auto;
+  }
+  .volBtn:hover{ background: rgba(255,255,255,.08); }
+  .volBtn svg{ width:15px; height:15px; opacity:.92; }
+
+  .volRange{
+    width:160px;
+    height:18px;
+    display:flex;
+    align-items:center;
+  }
+
+  /* custom range (Win-ish) */
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:4px;
+    border-radius:999px;
+    background: rgba(255,255,255,.22);
+    outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:14px;height:14px;border-radius:999px;
+    background: rgba(255,255,255,.92);
+    border:1px solid rgba(0,0,0,.35);
+    box means box-shadow: 0 8px 20px rgba(0,0,0,.45);
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:999px;
+    background: rgba(255,255,255,.92);
+    border:1px solid rgba(0,0,0,.35);
+  }
+  input[type="range"]::-moz-range-track{
+    height:4px;border-radius:999px;
+    background: rgba(255,255,255,.22);
+  }
+
+  .volPct{
+    font-size:12px;
+    color: rgba(168,179,199,.95);
+    font-weight:700;
+    width:42px;
+    text-align:right;
+  }
 
   /* ===== Symmetric content ===== */
   .content{
@@ -303,7 +383,6 @@
     opacity:0;
     pointer-events:none;
   }
-
   .gateText{
     font-size:26px;
     font-weight:800;
@@ -321,18 +400,21 @@
     100% { opacity:.3 }
   }
 
-  @media (max-width: 520px){
-    .gateText{font-size:22px}
-    .content{padding:22px 18px 18px}
-    .pfp{width:96px;height:96px}
-    h1{font-size:22px}
+  @media (max-width: 860px){
+    .volWidget{ max-width: 220px; }
+    .volRange{ width:120px; }
+  }
+  @media (max-width: 640px){
+    .titlebar{ height:auto; padding:8px 10px 8px 12px; flex-wrap:wrap; }
+    .winbtns{ margin-left:auto; }
+    .volWidget{ width:100%; max-width:none; justify-content:space-between; }
+    .volRange{ width:100%; }
   }
 </style>
 </head>
 
 <body>
 
-<!-- YouTube background -->
 <div class="bg" aria-hidden="true">
   <iframe
     src="https://www.youtube.com/embed/Ulm_Z646eBg?autoplay=1&mute=1&controls=0&rel=0&playsinline=1&loop=1&playlist=Ulm_Z646eBg&modestbranding=1&iv_load_policy=3&disablekb=1"
@@ -345,7 +427,6 @@
 <div class="bgOverlay" aria-hidden="true"></div>
 <div class="noise" aria-hidden="true"></div>
 
-<!-- Click-to-enter -->
 <div class="gate" id="gate" aria-label="click to enter">
   <div class="gateText">click to enter<span class="dots">...</span></div>
 </div>
@@ -354,7 +435,28 @@
   <div class="tilt" id="tilt">
     <section class="window">
       <div class="titlebar">
-        <div class="title"><div class="icon"></div> bio — Profile</div>
+        <div class="titleLeft">
+          <div class="title"><div class="icon"></div> discord.exe</div>
+
+          <!-- Volume widget like screenshot -->
+          <div class="volWidget" title="Volume">
+            <div class="volBtn" id="muteBtn" aria-label="mute">
+              <!-- speaker icon -->
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M11 5 7.5 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h3.5L11 19V5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                <path id="wave1" d="M14.5 9.2c.6.7.9 1.7.9 2.8s-.3 2.1-.9 2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path id="wave2" d="M16.8 7.2c1.1 1.2 1.7 2.9 1.7 4.8s-.6 3.6-1.7 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>
+              </svg>
+            </div>
+
+            <div class="volRange">
+              <input id="vol" type="range" min="0" max="100" value="55" />
+            </div>
+
+            <div class="volPct mono" id="volPct">55%</div>
+          </div>
+        </div>
+
         <div class="winbtns" aria-hidden="true">
           <div class="winbtn">—</div>
           <div class="winbtn">▢</div>
@@ -415,7 +517,6 @@
   const USER_ID = "1377987625129869373";
   const COUNT_NAMESPACE = "my-bio-khaki";
   const COUNT_KEY = "views";
-
   const $ = (id) => document.getElementById(id);
 
   // hover tilt + spotlight
@@ -508,34 +609,65 @@
     }
   }
 
-  // MP3 audio
+  // MP3 audio + volume widget
   const audio = $("bgMusic");
-  audio.volume = 0.55; // a bit quieter
+  const vol = $("vol");
+  const volPct = $("volPct");
+  const muteBtn = $("muteBtn");
+  const wave1 = document.getElementById("wave1");
+  const wave2 = document.getElementById("wave2");
+
+  let lastVolume = 0.55;
+
+  function applyVolume(v01){
+    audio.volume = Math.max(0, Math.min(1, v01));
+    const pct = Math.round(audio.volume * 100);
+    vol.value = String(pct);
+    volPct.textContent = pct + "%";
+
+    const muted = (pct === 0) || audio.muted;
+    wave1.style.opacity = muted ? "0" : "1";
+    wave2.style.opacity = muted ? "0" : ".9";
+  }
+
+  vol.addEventListener("input", () => {
+    const v = Number(vol.value) / 100;
+    audio.muted = false;
+    lastVolume = v || lastVolume;
+    applyVolume(v);
+  });
+
+  muteBtn.addEventListener("click", () => {
+    if(audio.muted || audio.volume === 0){
+      audio.muted = false;
+      applyVolume(lastVolume || 0.55);
+    }else{
+      lastVolume = audio.volume || lastVolume;
+      audio.muted = true;
+      applyVolume(audio.volume);
+    }
+  });
+
+  applyVolume(0.55); // default volume
 
   async function enter(){
     if(document.body.classList.contains("entered")) return;
     document.body.classList.add("entered");
 
-    try{
-      await audio.play(); // user gesture => should work
-    }catch{
-      // If a browser still blocks it, user can click again (rare)
-    }
+    try{ await audio.play(); } catch(e){ /* rare */ }
 
-    // load data after enter for cleaner feel
     loadViews();
     loadDiscord();
   }
 
-  // gate click
-  $("gate").addEventListener("click", enter);
+  document.getElementById("gate").addEventListener("click", enter);
 
-  // init small stuff
+  // init
   $("year").textContent = new Date().getFullYear();
   setClock();
   setInterval(setClock, 10000);
 
-  // keep discord refreshing AFTER enter
+  // refresh discord after enter
   setInterval(() => {
     if(document.body.classList.contains("entered")) loadDiscord();
   }, 15000);
