@@ -3,166 +3,194 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>bio.exe</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>bio</title>
 
   <style>
     :root{
-      --bg0:#05060a;
-      --bg1:#070814;
-      --panel: rgba(255,255,255,.06);
-      --panel2: rgba(255,255,255,.04);
+      --bg:#0a0c12;
+      --bg2:#05060a;
+      --text:#f2f6ff;
+      --muted:#a8b3c7;
+
+      --panel: rgba(18,20,28,.62);
+      --panel2: rgba(18,20,28,.45);
       --stroke: rgba(255,255,255,.12);
       --stroke2: rgba(255,255,255,.18);
 
-      --text:#eef2ff;
-      --muted:#a3b3c7;
-
-      --blue:#60a5fa;
+      --blue:#4aa3ff;
       --purple:#a78bfa;
+
       --green:#22c55e;
       --amber:#f59e0b;
       --red:#ef4444;
       --gray:#64748b;
 
-      --shadow: 0 18px 70px rgba(0,0,0,.70);
-      --inner: 0 0 0 1px rgba(0,0,0,.25) inset;
-      --radius: 18px;
+      --shadow: 0 22px 80px rgba(0,0,0,.72);
+      --inner: 0 0 0 1px rgba(0,0,0,.30) inset;
+
+      /* Win10-ish */
+      --radius: 12px;
+      --titlebarH: 42px;
     }
 
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
-
     body{
       margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
       color:var(--text);
       background:
-        radial-gradient(1200px 700px at 10% 10%, rgba(96,165,250,.18), transparent 55%),
-        radial-gradient(900px 600px at 80% 20%, rgba(167,139,250,.16), transparent 55%),
-        radial-gradient(1000px 700px at 60% 90%, rgba(34,197,94,.10), transparent 55%),
-        linear-gradient(180deg, var(--bg1), var(--bg0));
+        radial-gradient(1200px 700px at 15% 15%, rgba(74,163,255,.16), transparent 58%),
+        radial-gradient(900px 650px at 85% 25%, rgba(167,139,250,.14), transparent 60%),
+        radial-gradient(900px 700px at 55% 92%, rgba(34,197,94,.08), transparent 62%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
       display:grid;
       place-items:center;
-      padding:32px 14px;
+      padding:28px 14px;
       overflow-x:hidden;
     }
 
-    /* background polish */
+    /* Win10-ish subtle noise + vignette */
     .noise{
       pointer-events:none;
       position:fixed; inset:0;
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
-      opacity:.05;
+      opacity:.04;
       mix-blend-mode: overlay;
     }
     .vignette{
       pointer-events:none;
-      position:fixed; inset:-20%;
+      position:fixed; inset:-25%;
       background: radial-gradient(circle at 50% 45%, transparent 35%, rgba(0,0,0,.55) 75%);
-      opacity:.9;
+      opacity:.85;
     }
 
-    .shell{
-      width:min(1020px, 100%);
+    .wrap{
+      width:min(980px, 100%);
       display:grid;
-      grid-template-columns: 1.25fr .85fr;
-      gap:16px;
+      place-items:center;
     }
 
-    /* ===== Windows app window ===== */
-    .window{
-      border:1px solid var(--stroke);
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      box-shadow: var(--shadow);
-      overflow:hidden;
+    /* ===== Guns.lol-ish hover: tilt + spotlight + border glow ===== */
+    .tilt{
+      width:min(860px, 100%);
+      transform-style: preserve-3d;
+      will-change: transform;
+      transition: transform .14s ease;
       position:relative;
-      transform: translateY(6px);
-      animation: pop .6s ease forwards;
     }
-    @keyframes pop { to { transform: translateY(0); } }
 
+    /* spotlight that follows mouse */
+    .tilt::before{
+      content:"";
+      position:absolute; inset:-2px;
+      border-radius: calc(var(--radius) + 2px);
+      background: radial-gradient(500px 260px at var(--mx,50%) var(--my,50%),
+        rgba(74,163,255,.22),
+        rgba(167,139,250,.10) 35%,
+        transparent 60%);
+      opacity:0;
+      transition: opacity .16s ease;
+      pointer-events:none;
+      filter: blur(2px);
+    }
+
+    /* border glow ring */
+    .tilt::after{
+      content:"";
+      position:absolute; inset:-1px;
+      border-radius: calc(var(--radius) + 1px);
+      background: linear-gradient(120deg,
+        rgba(74,163,255,.0),
+        rgba(74,163,255,.22),
+        rgba(167,139,250,.18),
+        rgba(34,197,94,.12),
+        rgba(74,163,255,.0));
+      opacity:0;
+      transition: opacity .16s ease;
+      pointer-events:none;
+      filter: blur(6px);
+    }
+
+    .tilt:hover::before,
+    .tilt:hover::after{
+      opacity:1;
+    }
+
+    /* ===== Window ===== */
+    .window{
+      border-radius: var(--radius);
+      overflow:hidden;
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transform: translateZ(0);
+      position:relative;
+    }
+
+    /* Win10 titlebar */
     .titlebar{
-      height:46px;
+      height: var(--titlebarH);
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 10px 0 14px;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border-bottom:1px solid rgba(255,255,255,.10);
+      padding:0 10px 0 12px;
+      background: rgba(18,20,28,.50);
+      border-bottom:1px solid rgba(255,255,255,.08);
       user-select:none;
     }
 
-    .appTitle{
+    .leftTitle{
       display:flex;
       align-items:center;
       gap:10px;
       min-width:0;
     }
+
     .appIcon{
-      width:18px; height:18px;
-      border-radius:5px;
-      background: linear-gradient(135deg, rgba(96,165,250,.95), rgba(167,139,250,.95));
-      box-shadow: 0 0 0 1px rgba(255,255,255,.25) inset;
+      width:16px; height:16px;
+      border-radius:4px;
+      background: linear-gradient(135deg, rgba(74,163,255,.95), rgba(167,139,250,.95));
+      box-shadow: 0 0 0 1px rgba(255,255,255,.18) inset;
       flex:0 0 auto;
     }
-    .appText{
-      font-weight:700;
+
+    .appName{
       font-size:12.5px;
-      color: rgba(238,242,255,.92);
+      font-weight:600;
+      color: rgba(242,246,255,.92);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      max-width: 52ch;
     }
 
     .winBtns{
       display:flex;
-      gap:6px;
-      align-items:center;
+      gap:0;
+      align-items:stretch;
+      height:100%;
     }
-    .winBtn{
-      width:44px; height:30px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
+
+    .wbtn{
+      width:46px;
       display:grid;
       place-items:center;
-      color: rgba(238,242,255,.82);
+      color: rgba(242,246,255,.85);
       font-size:12px;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      border-left:1px solid rgba(255,255,255,.06);
+      background: transparent;
+      transition: background .12s ease;
     }
-    .winBtn:hover{
-      transform: translateY(-1px);
-      border-color: rgba(255,255,255,.22);
-      background: rgba(255,255,255,.07);
-    }
-    .winBtn.close:hover{
-      background: rgba(239,68,68,.20);
-      border-color: rgba(239,68,68,.35);
-      color: rgba(255,255,255,.95);
-    }
+    .wbtn:hover{ background: rgba(255,255,255,.06); }
+    .wbtn.close:hover{ background: rgba(239,68,68,.22); }
 
     .content{
       padding:18px;
     }
 
-    /* hover glow for whole window */
-    .window::after{
-      content:"";
-      position:absolute; inset:-2px;
-      border-radius: calc(var(--radius) + 2px);
-      background: radial-gradient(600px 260px at var(--mx,50%) var(--my,50%), rgba(96,165,250,.18), transparent 60%);
-      opacity:0;
-      transition: opacity .15s ease;
-      pointer-events:none;
-    }
-    .window:hover::after{ opacity:1; }
-
-    /* ===== Sections ===== */
     .top{
       display:flex;
       gap:14px;
@@ -172,34 +200,37 @@
 
     .pfp{
       width:78px; height:78px;
-      border-radius:16px;
+      border-radius:10px;
       overflow:hidden;
       border:1px solid rgba(255,255,255,.14);
       background: rgba(255,255,255,.04);
       box-shadow: var(--inner);
       flex:0 0 auto;
-      position:relative;
     }
     .pfp img{ width:100%; height:100%; object-fit:cover; display:block; }
 
     .meta{ flex:1; min-width:0; }
+
     .nameRow{
       display:flex;
       align-items:baseline;
       gap:10px;
       flex-wrap:wrap;
     }
+
     .name{
       margin:0;
       font-size:18px;
       font-weight:800;
       letter-spacing:.2px;
     }
+
     .handle{
-      font-family: "JetBrains Mono", ui-monospace, monospace;
-      font-size:12px;
-      color: rgba(163,179,199,.95);
+      font-size:12.5px;
+      color: rgba(168,179,199,.95);
+      font-weight:600;
     }
+
     .tagline{
       margin-top:8px;
       color: var(--muted);
@@ -213,6 +244,7 @@
       gap:10px;
       margin-top:12px;
     }
+
     .pill{
       display:inline-flex;
       align-items:center;
@@ -221,31 +253,31 @@
       border-radius:999px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.03);
-      color: rgba(163,179,199,.96);
+      color: rgba(168,179,199,.96);
       font-size:12px;
-      transition: transform .12s ease, border-color .12s ease, background .12s ease;
       position:relative;
       overflow:hidden;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
     }
 
-    /* hover “shine sweep” effect */
+    /* shiny sweep like guns.lol-ish */
     .pill::before{
       content:"";
       position:absolute;
       top:-40%;
-      left:-60%;
-      width:60%;
-      height:180%;
+      left:-70%;
+      width:70%;
+      height:200%;
       transform: rotate(18deg);
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
       opacity:0;
-      transition: left .35s ease, opacity .2s ease;
+      transition: left .38s ease, opacity .18s ease;
       pointer-events:none;
     }
     .pill:hover{
       transform: translateY(-1px);
-      border-color: rgba(96,165,250,.35);
-      background: rgba(96,165,250,.06);
+      border-color: rgba(74,163,255,.35);
+      background: rgba(74,163,255,.06);
     }
     .pill:hover::before{
       opacity:1;
@@ -253,8 +285,7 @@
     }
 
     .sDot{
-      width:9px; height:9px;
-      border-radius:50%;
+      width:9px;height:9px;border-radius:50%;
       box-shadow: 0 0 0 3px rgba(255,255,255,.04);
       background: var(--gray);
     }
@@ -273,24 +304,25 @@
     .panel{
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.03);
-      border-radius:14px;
+      border-radius:10px;
       padding:14px;
       box-shadow: var(--inner);
-      position:relative;
       transition: transform .14s ease, border-color .14s ease, background .14s ease;
+      position:relative;
       overflow:hidden;
     }
     .panel:hover{
       transform: translateY(-2px);
-      border-color: rgba(167,139,250,.30);
+      border-color: rgba(167,139,250,.28);
       background: rgba(167,139,250,.06);
     }
+
     .panel h2{
       margin:0 0 10px;
       font-size:12px;
       letter-spacing:.25px;
       text-transform:uppercase;
-      color: rgba(238,242,255,.92);
+      color: rgba(242,246,255,.92);
     }
     .panel p{
       margin:0;
@@ -310,12 +342,12 @@
       align-items:center;
       gap:10px;
       padding:10px 12px;
-      border-radius:12px;
+      border-radius:10px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.03);
       color: var(--text);
       text-decoration:none;
-      font-weight:800;
+      font-weight:700;
       font-size:12.5px;
       transition: transform .12s ease, border-color .12s ease, background .12s ease;
       position:relative;
@@ -327,43 +359,39 @@
       background: rgba(34,197,94,.06);
     }
 
-    .mono{ font-family:"JetBrains Mono", ui-monospace, monospace; }
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
 
     .footer{
-      padding:12px 18px 16px;
+      padding:12px 18px 14px;
       border-top:1px solid rgba(255,255,255,.08);
-      color: rgba(163,179,199,.85);
+      color: rgba(168,179,199,.85);
       font-size:11px;
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
-      background: rgba(255,255,255,.02);
+      background: rgba(18,20,28,.36);
     }
 
-    /* Right side "system" window */
-    .kv{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      padding:9px 0;
-      border-bottom:1px dashed rgba(255,255,255,.12);
-      font-size:12px;
-      color: rgba(163,179,199,.95);
+    .debug{
+      margin-top:10px;
+      font-size:11px;
+      color: rgba(148,163,184,.92);
+      white-space:pre-wrap;
     }
-    .kv:last-child{ border-bottom:none; }
-    .kv b{ color: rgba(238,242,255,.92); font-weight:800; }
 
-    /* focus ring */
-    a:focus-visible, button:focus-visible{
+    /* accessibility focus ring */
+    a:focus-visible{
       outline:none;
-      box-shadow: 0 0 0 4px rgba(96,165,250,.20);
-      border-color: rgba(96,165,250,.45);
+      box-shadow: 0 0 0 4px rgba(74,163,255,.22);
+      border-color: rgba(74,163,255,.45);
     }
 
     @media (max-width: 940px){
-      .shell{ grid-template-columns: 1fr; }
       .grid{ grid-template-columns: 1fr; }
+      .appName{ max-width: 36ch; }
     }
   </style>
 </head>
@@ -372,128 +400,92 @@
   <div class="noise"></div>
   <div class="vignette"></div>
 
-  <div class="shell">
+  <div class="wrap">
+    <div class="tilt" id="tilt">
 
-    <!-- MAIN WINDOW -->
-    <section class="window" id="winMain">
-      <div class="titlebar">
-        <div class="appTitle">
-          <div class="appIcon"></div>
-          <div class="appText">bio.exe — Profile</div>
-        </div>
-
-        <div class="winBtns" aria-hidden="true">
-          <div class="winBtn" title="Minimize">—</div>
-          <div class="winBtn" title="Maximize">▢</div>
-          <div class="winBtn close" title="Close">✕</div>
-        </div>
-      </div>
-
-      <div class="content">
-        <div class="top">
-          <div class="pfp">
-            <img id="pfp" alt="pfp" src="https://cdn.discordapp.com/embed/avatars/0.png">
+      <section class="window" id="win">
+        <div class="titlebar">
+          <div class="leftTitle">
+            <div class="appIcon"></div>
+            <div class="appName">bio — Profile</div>
           </div>
 
-          <div class="meta">
-            <div class="nameRow">
-              <h1 class="name" id="name">loading…</h1>
-              <div class="handle" id="handle">@discord</div>
-            </div>
-
-            <div class="tagline" id="tagline">
-              windows ui • dev vibe • live discord status
-            </div>
-
-            <div class="pills">
-              <div class="pill" title="Discord presence">
-                <span id="statusDot" class="sDot offline"></span>
-                <span id="statusText">offline</span>
-              </div>
-
-              <div class="pill" title="Page views">
-                views <span class="mono" id="views">…</span>
-              </div>
-
-              <div class="pill" title="API ping">
-                ping <span class="mono" id="ping">…</span>
-              </div>
-
-              <div class="pill" title="Local time">
-                time <span class="mono" id="clock">--:--</span>
-              </div>
-            </div>
+          <div class="winBtns" aria-hidden="true">
+            <div class="wbtn" title="Minimize">—</div>
+            <div class="wbtn" title="Maximize">▢</div>
+            <div class="wbtn close" title="Close">✕</div>
           </div>
         </div>
 
-        <div class="grid">
-          <div class="panel">
-            <h2>about</h2>
-            <p id="about">
-              clean windows-app bio page with hover effects. live status pulled from discord via lanyard.
-            </p>
+        <div class="content">
+          <div class="top">
+            <div class="pfp">
+              <img id="pfp" alt="pfp" src="https://cdn.discordapp.com/embed/avatars/0.png">
+            </div>
 
-            <div class="links">
-              <!-- edit these -->
-              <a class="btn" href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
-              <a class="btn" href="https://x.com" target="_blank" rel="noreferrer">X</a>
-              <a class="btn" href="mailto:you@example.com">Mail</a>
-              <a class="btn" href="https://discord.com" target="_blank" rel="noreferrer">Discord</a>
+            <div class="meta">
+              <div class="nameRow">
+                <h1 class="name" id="name">loading…</h1>
+                <div class="handle" id="handle">@discord</div>
+              </div>
+
+              <div class="tagline" id="tagline">
+                win10 app vibe • clean • dev/hacker
+              </div>
+
+              <div class="pills">
+                <div class="pill" title="Discord presence">
+                  <span id="statusDot" class="sDot offline"></span>
+                  <span id="statusText">offline</span>
+                </div>
+
+                <div class="pill" title="Page views">
+                  views <span class="mono" id="views">…</span>
+                </div>
+
+                <div class="pill" title="API ping">
+                  ping <span class="mono" id="ping">…</span>
+                </div>
+
+                <div class="pill" title="Local time">
+                  time <span class="mono" id="clock">--:--</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="panel">
-            <h2>live</h2>
-            <p><span class="mono">activity:</span> <span id="activity">—</span></p>
-            <p style="margin-top:10px;"><span class="mono">spotify:</span> <span id="spotify">not playing</span></p>
-            <p style="margin-top:10px; opacity:.85" class="mono" id="debug"></p>
+          <div class="grid">
+            <div class="panel">
+              <h2>about</h2>
+              <p id="about">
+                minimal bio im windows-look. hover = tilt + spotlight + glow.
+              </p>
+
+              <div class="links">
+                <!-- edit links -->
+                <a class="btn" href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
+                <a class="btn" href="https://x.com" target="_blank" rel="noreferrer">X</a>
+                <a class="btn" href="mailto:you@example.com">Mail</a>
+                <a class="btn" href="https://discord.com" target="_blank" rel="noreferrer">Discord</a>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h2>live</h2>
+              <p><span class="mono">activity:</span> <span id="activity">—</span></p>
+              <p style="margin-top:10px;"><span class="mono">spotify:</span> <span id="spotify">not playing</span></p>
+              <div class="debug mono" id="debug"></div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="footer">
-        <span class="mono">© <span id="year"></span> bio.exe</span>
-        <span class="mono">vercel • lanyard • countapi</span>
-      </div>
-    </section>
-
-    <!-- SIDE WINDOW -->
-    <aside class="window" id="winSide">
-      <div class="titlebar">
-        <div class="appTitle">
-          <div class="appIcon" style="background:linear-gradient(135deg, rgba(34,197,94,.95), rgba(96,165,250,.95));"></div>
-          <div class="appText">system — status</div>
+        <div class="footer">
+          <span class="mono">© <span id="year"></span></span>
+          <span class="mono">vercel • lanyard • countapi</span>
         </div>
+      </section>
 
-        <div class="winBtns" aria-hidden="true">
-          <div class="winBtn">—</div>
-          <div class="winBtn">▢</div>
-          <div class="winBtn close">✕</div>
-        </div>
-      </div>
-
-      <div class="content">
-        <div class="kv"><span>host</span> <b class="mono">vercel</b></div>
-        <div class="kv"><span>presence</span> <b class="mono" id="presence">—</b></div>
-        <div class="kv"><span>activity</span> <b class="mono" id="activityMini">—</b></div>
-        <div class="kv"><span>last update</span> <b class="mono" id="updated">—</b></div>
-
-        <div style="margin-top:14px" class="panel">
-          <h2>tips</h2>
-          <p class="mono">
-            hover cards = glow + shine<br>
-            updates every 15s<br>
-            clean & modern
-          </p>
-        </div>
-      </div>
-
-      <div class="footer">
-        <span class="mono">refresh: 15s</span>
-        <span class="mono" id="sideState">ok</span>
-      </div>
-    </aside>
-
+    </div>
   </div>
 
   <script>
@@ -504,19 +496,39 @@
 
     const $ = (id) => document.getElementById(id);
 
-    // window hover glow follows mouse
-    function attachMouseGlow(win){
-      win.addEventListener("mousemove", (e)=>{
-        const r = win.getBoundingClientRect();
-        const x = ((e.clientX - r.left) / r.width) * 100;
-        const y = ((e.clientY - r.top) / r.height) * 100;
-        win.style.setProperty("--mx", x + "%");
-        win.style.setProperty("--my", y + "%");
-      });
-    }
-    attachMouseGlow($("winMain"));
-    attachMouseGlow($("winSide"));
+    // ===== Tilt + spotlight like guns.lol-ish =====
+    const tilt = $("tilt");
+    const maxTilt = 7; // degrees
 
+    function setSpotlightVars(clientX, clientY){
+      const r = tilt.getBoundingClientRect();
+      const mx = ((clientX - r.left) / r.width) * 100;
+      const my = ((clientY - r.top) / r.height) * 100;
+      tilt.style.setProperty("--mx", mx + "%");
+      tilt.style.setProperty("--my", my + "%");
+    }
+
+    tilt.addEventListener("mousemove", (e) => {
+      const r = tilt.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;   // 0..1
+      const py = (e.clientY - r.top) / r.height;   // 0..1
+
+      const ry = (px - 0.5) * (maxTilt * 2);       // rotateY
+      const rx = (0.5 - py) * (maxTilt * 2);       // rotateX
+
+      // tiny lift
+      tilt.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-2px)`;
+
+      setSpotlightVars(e.clientX, e.clientY);
+    });
+
+    tilt.addEventListener("mouseleave", () => {
+      tilt.style.transform = `perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+      tilt.style.setProperty("--mx", "50%");
+      tilt.style.setProperty("--my", "50%");
+    });
+
+    // ===== clock =====
     function setClock(){
       const d = new Date();
       const hh = String(d.getHours()).padStart(2,"0");
@@ -524,21 +536,13 @@
       $("clock").textContent = `${hh}:${mm}`;
     }
 
-    function setStatus(status){
-      const s = status || "offline";
-      $("statusText").textContent = s;
-      $("statusDot").className = "sDot " + s;
-      $("presence").textContent = s;
-      $("sideState").textContent = s === "offline" ? "degraded" : "ok";
-    }
-
+    // ===== views (CountAPI + fallback local) =====
     async function loadViews(){
       try{
         const r = await fetch(`https://api.countapi.xyz/hit/${encodeURIComponent(COUNT_NAMESPACE)}/${encodeURIComponent(COUNT_KEY)}`, { cache:"no-store" });
         const j = await r.json();
         $("views").textContent = (j.value ?? 0).toLocaleString();
       }catch{
-        // fallback local
         const k = "local_views_v1";
         const n = (Number(localStorage.getItem(k)||0) + 1);
         localStorage.setItem(k, String(n));
@@ -546,8 +550,15 @@
       }
     }
 
+    // ===== discord presence (Lanyard) =====
     function msPing(start){
       return Math.max(0, Math.round(performance.now() - start));
+    }
+
+    function setStatus(status){
+      const s = status || "offline";
+      $("statusText").textContent = s;
+      $("statusDot").className = "sDot " + s;
     }
 
     function pickActivity(data){
@@ -560,12 +571,10 @@
     function setActivity(act){
       if(!act){
         $("activity").textContent = "none";
-        $("activityMini").textContent = "—";
         return;
       }
       const details = act.details || act.state || "";
       $("activity").textContent = details ? `${act.name} — ${details}` : act.name;
-      $("activityMini").textContent = act.name;
     }
 
     function setSpotify(sp){
@@ -610,10 +619,8 @@
         setActivity(pickActivity(d));
         setSpotify(d.spotify || null);
 
-        const now = new Date();
-        $("updated").textContent = now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
         $("debug").textContent = "connected ✓";
-      } catch {
+      }catch{
         $("debug").textContent = "blocked by network/adblock";
         setStatus("offline");
       }
