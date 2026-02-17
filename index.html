@@ -59,45 +59,51 @@ h1{margin:0 0 6px;font-weight:800}
 
 <script>
 const USER_ID = "1377987625129869373";
-const $ = id => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
 
-// Views via CountAPI
-const r = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`);
+function setStatus(status){
+  $("status").textContent = status || "offline";
+  $("dot").className = "dot " + (status || "offline");
+}
 
-  .then(r=>r.json())
-  .then(d=>$("views").textContent=d.value);
-
-// Discord via Lanyard
-async function load(){
-  const r = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`);
-  const j = await r.json();
-  const d = j.data;
-  if(!d) return;
-
-  const u = d.discord_user;
-  $("name").textContent = u.global_name || u.username;
-
-  if(u.avatar){
-    $("pfp").src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=256`;
-  }
-
-  const status = d.discord_status;
-  $("status").textContent = status;
-  $("dot").className = "dot " + status;
-
-  if(d.activities.length){
-    const act = d.activities.find(a=>a.name);
-    if(act){
-      $("activity").textContent = "Playing: " + act.name;
-    }
+async function loadViews(){
+  try {
+    const r = await fetch("https://api.countapi.xyz/hit/my-bio-khaki/views", { cache: "no-store" });
+    const j = await r.json();
+    $("views").textContent = (j.value ?? 0).toLocaleString();
+  } catch {
+    $("views").textContent = "—";
   }
 }
 
-load();
-setInterval(load,15000);
+async function loadDiscord(){
+  try {
+    const r = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`, { cache: "no-store" });
+    const j = await r.json();
+    const d = j?.data;
+    if(!d) return;
+
+    const u = d.discord_user || {};
+    $("name").textContent = u.global_name || u.username || "User";
+
+    if(u.id && u.avatar){
+      const ext = u.avatar.startsWith("a_") ? "gif" : "png";
+      $("pfp").src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${ext}?size=256`;
+    }
+
+    setStatus(d.discord_status);
+
+    const acts = Array.isArray(d.activities) ? d.activities : [];
+    const a = acts.find(x => x && x.name && x.type !== 4) || acts.find(x => x && x.name) || null;
+    $("activity").textContent = a ? `Playing: ${a.name}` : "No activity";
+
+  } catch {
+    $("name").textContent = "Error loading Discord";
+    setStatus("offline");
+  }
+}
+
+loadViews();
+loadDiscord();
+setInterval(loadDiscord, 15000);
 </script>
-
-</body>
-</html>
-
-
