@@ -7,55 +7,134 @@
 
 <style>
 :root{
-  --bg:#0a0c12;
-  --bg2:#05060a;
   --text:#f2f6ff;
   --muted:#a8b3c7;
-  --panel: rgba(18,20,28,.65);
+
+  --panel: rgba(18,20,28,.62);
   --stroke: rgba(255,255,255,.12);
 
   --blue:#4aa3ff;
   --purple:#a78bfa;
+
   --green:#22c55e;
   --amber:#f59e0b;
   --red:#ef4444;
   --gray:#64748b;
 
   --radius:12px;
+  --shadow: 0 25px 80px rgba(0,0,0,.72);
 }
 
 *{box-sizing:border-box}
+html,body{height:100%}
+
 body{
   margin:0;
-  font-family:"Segoe UI",system-ui,-apple-system;
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
   color:var(--text);
-  background:
-    radial-gradient(1000px 600px at 15% 15%, rgba(74,163,255,.15), transparent 60%),
-    radial-gradient(900px 700px at 85% 25%, rgba(167,139,250,.15), transparent 60%),
-    linear-gradient(180deg,var(--bg),var(--bg2));
-  display:grid;
-  place-items:center;
-  padding:30px;
+  background:#05060a;
+  overflow-x:hidden;
 }
 
-/* ===== guns.lol tilt effect ===== */
+/* ===== YouTube background ===== */
+.bg{
+  position:fixed;
+  inset:0;
+  z-index:-3;
+  overflow:hidden;
+}
+.bg iframe{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width: 160vw;
+  height: 90vw;
+  min-width: 160vh;
+  min-height: 90vh;
+  transform: translate(-50%,-50%);
+  filter: blur(10px);
+  opacity:.42;
+  pointer-events:none;
+}
+
+/* overlays to keep it clean */
+.bgOverlay{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:
+    radial-gradient(1000px 600px at 15% 15%, rgba(74,163,255,.14), transparent 60%),
+    radial-gradient(900px 700px at 85% 25%, rgba(167,139,250,.14), transparent 60%),
+    radial-gradient(900px 700px at 60% 90%, rgba(34,197,94,.07), transparent 62%),
+    linear-gradient(180deg, rgba(10,12,18,.70), rgba(5,6,10,.85));
+}
+
+.noise{
+  pointer-events:none;
+  position:fixed; inset:0;
+  z-index:-1;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
+  opacity:.05;
+  mix-blend-mode: overlay;
+}
+
+/* ===== Center container ===== */
+.stage{
+  min-height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:28px 14px;
+}
+
+/* ===== guns.lol-ish tilt + spotlight ===== */
 .tilt{
   width:min(860px,100%);
-  transition:transform .15s ease;
   transform-style:preserve-3d;
+  will-change:transform;
+  transition:transform .14s ease;
+  position:relative;
 }
-
-.tilt:hover{
-  transform:perspective(900px) rotateX(4deg) rotateY(-4deg);
+.tilt::before{
+  content:"";
+  position:absolute; inset:-2px;
+  border-radius: calc(var(--radius) + 2px);
+  background: radial-gradient(520px 280px at var(--mx,50%) var(--my,50%),
+    rgba(74,163,255,.22),
+    rgba(167,139,250,.10) 40%,
+    transparent 62%);
+  opacity:0;
+  transition: opacity .16s ease;
+  pointer-events:none;
+  filter: blur(2px);
 }
+.tilt::after{
+  content:"";
+  position:absolute; inset:-1px;
+  border-radius: calc(var(--radius) + 1px);
+  background: linear-gradient(120deg,
+    rgba(74,163,255,0),
+    rgba(74,163,255,.22),
+    rgba(167,139,250,.18),
+    rgba(34,197,94,.12),
+    rgba(74,163,255,0));
+  opacity:0;
+  transition: opacity .16s ease;
+  pointer-events:none;
+  filter: blur(8px);
+}
+.tilt:hover::before,.tilt:hover::after{opacity:1}
 
+/* ===== Window ===== */
 .window{
   border-radius:var(--radius);
   overflow:hidden;
   border:1px solid var(--stroke);
-  background:var(--panel);
-  backdrop-filter:blur(20px);
-  box-shadow:0 25px 80px rgba(0,0,0,.7);
+  background: linear-gradient(180deg, rgba(18,20,28,.70), rgba(18,20,28,.50));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+  transform: translateZ(0);
 }
 
 .titlebar{
@@ -63,38 +142,35 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:0 10px;
+  padding:0 10px 0 12px;
   background:rgba(255,255,255,.05);
   border-bottom:1px solid rgba(255,255,255,.08);
+  user-select:none;
 }
-
 .title{
   display:flex;
   align-items:center;
   gap:8px;
   font-size:13px;
   font-weight:600;
+  color:rgba(242,246,255,.92);
 }
-
 .icon{
   width:14px;
   height:14px;
   border-radius:4px;
   background:linear-gradient(135deg,var(--blue),var(--purple));
 }
-
-.winbtns{
-  display:flex;
-}
-
+.winbtns{display:flex}
 .winbtn{
   width:45px;
   text-align:center;
-  cursor:pointer;
-  padding:5px 0;
+  padding:6px 0;
+  border-left:1px solid rgba(255,255,255,.06);
+  color:rgba(242,246,255,.85);
 }
-.winbtn:hover{background:rgba(255,255,255,.1)}
-.winbtn.close:hover{background:rgba(239,68,68,.3)}
+.winbtn:hover{background:rgba(255,255,255,.08)}
+.winbtn.close:hover{background:rgba(239,68,68,.25)}
 
 .content{padding:20px}
 
@@ -103,64 +179,102 @@ body{
   gap:14px;
   align-items:center;
 }
-
 .pfp{
   width:78px;height:78px;
   border-radius:10px;
   overflow:hidden;
   border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.03);
 }
-.pfp img{width:100%;height:100%;object-fit:cover}
+.pfp img{width:100%;height:100%;object-fit:cover;display:block}
 
-.name{font-size:18px;font-weight:800}
-.handle{font-size:12px;color:var(--muted)}
-
+.meta{min-width:0}
+.name{font-size:18px;font-weight:800;line-height:1.2}
+.handle{font-size:12.5px;color:var(--muted);font-weight:600}
 .tagline{margin-top:6px;font-size:13px;color:var(--muted)}
 
 .pills{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 .pill{
   padding:7px 10px;
   border-radius:999px;
-  border:1px solid rgba(255,255,255,.1);
-  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
   font-size:12px;
+  color:rgba(168,179,199,.96);
   display:flex;
   gap:8px;
   align-items:center;
+  position:relative;
+  overflow:hidden;
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
 }
+.pill::before{
+  content:"";
+  position:absolute;
+  top:-40%;
+  left:-70%;
+  width:70%;
+  height:200%;
+  transform: rotate(18deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  opacity:0;
+  transition: left .38s ease, opacity .18s ease;
+  pointer-events:none;
+}
+.pill:hover{
+  transform: translateY(-1px);
+  border-color: rgba(74,163,255,.35);
+  background: rgba(74,163,255,.06);
+}
+.pill:hover::before{opacity:1; left:120%}
 
 .sDot{width:8px;height:8px;border-radius:50%;background:var(--gray)}
 .sDot.online{background:var(--green)}
 .sDot.idle{background:var(--amber)}
 .sDot.dnd{background:var(--red)}
+.sDot.offline{background:var(--gray)}
 
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
-
 .panel{
-  border:1px solid rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.10);
   border-radius:10px;
   padding:14px;
-  background:rgba(255,255,255,.04);
+  background:rgba(255,255,255,.03);
+  transition: transform .14s ease, border-color .14s ease, background .14s ease;
 }
-
+.panel:hover{
+  transform: translateY(-2px);
+  border-color: rgba(167,139,250,.28);
+  background: rgba(167,139,250,.06);
+}
 .panel h2{
   margin:0 0 8px;
   font-size:12px;
   text-transform:uppercase;
   letter-spacing:.3px;
+  color:rgba(242,246,255,.92);
 }
+.panel p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
 
+.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .btn{
-  display:inline-block;
-  margin-top:8px;
-  padding:8px 10px;
-  border-radius:8px;
+  display:inline-flex;
+  align-items:center;
+  padding:9px 11px;
+  border-radius:10px;
   border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.03);
   text-decoration:none;
-  color:white;
-  font-size:12px;
+  color:var(--text);
+  font-size:12.5px;
+  font-weight:700;
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
 }
-.btn:hover{background:rgba(255,255,255,.08)}
+.btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(34,197,94,.30);
+  background: rgba(34,197,94,.06);
+}
 
 .footer{
   padding:10px 15px;
@@ -169,152 +283,270 @@ body{
   display:flex;
   justify-content:space-between;
   color:var(--muted);
+  background:rgba(255,255,255,.03);
+}
+
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+
+@media (max-width: 940px){
+  .grid{grid-template-columns:1fr}
+  .bg iframe{opacity:.28; filter: blur(12px);}
 }
 </style>
 </head>
 
 <body>
 
-<div class="tilt">
-<div class="window">
+<!-- YouTube background (muted, autoplay, loop) -->
+<div class="bg" aria-hidden="true">
+  <iframe
+    src="https://www.youtube.com/embed/Ulm_Z646eBg?autoplay=1&mute=1&controls=0&rel=0&playsinline=1&loop=1&playlist=Ulm_Z646eBg&modestbranding=1&iv_load_policy=3&disablekb=1"
+    title="background"
+    frameborder="0"
+    allow="autoplay; encrypted-media"
+    referrerpolicy="strict-origin-when-cross-origin">
+  </iframe>
+</div>
+<div class="bgOverlay" aria-hidden="true"></div>
+<div class="noise" aria-hidden="true"></div>
 
-<div class="titlebar">
-  <div class="title">
-    <div class="icon"></div>
-    bio — Profile
+<div class="stage">
+  <div class="tilt" id="tilt">
+    <section class="window" id="win">
+      <div class="titlebar">
+        <div class="title"><div class="icon"></div> bio — Profile</div>
+        <div class="winbtns" aria-hidden="true">
+          <div class="winbtn">—</div>
+          <div class="winbtn">▢</div>
+          <div class="winbtn close">✕</div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="top">
+          <div class="pfp"><img id="pfp" alt="pfp" src="https://cdn.discordapp.com/embed/avatars/0.png"></div>
+          <div class="meta">
+            <div class="name" id="name">loading…</div>
+            <div class="handle" id="handle">@discord</div>
+            <div class="tagline">win10 vibe • guns.lol hover • youtube bg</div>
+
+            <div class="pills">
+              <div class="pill" title="Discord status"><div id="statusDot" class="sDot offline"></div><span id="statusText">offline</span></div>
+              <div class="pill" title="Views">views <span class="mono" id="views">…</span></div>
+              <div class="pill" title="Ping">ping <span class="mono" id="ping">…</span></div>
+              <div class="pill" title="Local time">time <span class="mono" id="clock">--:--</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="panel">
+            <h2>about</h2>
+            <p id="about">minimal windows-app bio. hover = tilt + spotlight. discord status live.</p>
+            <div class="links">
+              <a class="btn" href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
+              <a class="btn" href="https://x.com" target="_blank" rel="noreferrer">X</a>
+              <a class="btn" href="mailto:you@example.com">Mail</a>
+              <a class="btn" href="https://discord.com" target="_blank" rel="noreferrer">Discord</a>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>live</h2>
+            <p><span class="mono">activity:</span> <span id="activity">—</span></p>
+            <p style="margin-top:8px;"><span class="mono">spotify:</span> <span id="spotifyText">—</span></p>
+
+            <!-- Spotify embed (stays stable; won't restart unless track changes) -->
+            <div style="margin-top:12px;">
+              <iframe
+                id="spotifyEmbed"
+                style="border-radius:10px;width:100%;height:152px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);"
+                src="https://open.spotify.com/embed/track/1ZgMsA55GIY7ICkQh5MILA?utm_source=generator&theme=0"
+                frameborder="0"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy">
+              </iframe>
+            </div>
+
+            <p class="mono" id="debug" style="margin-top:10px;opacity:.85"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>© <span id="year"></span></span>
+        <span class="mono">vercel • lanyard • countapi</span>
+      </div>
+    </section>
   </div>
-  <div class="winbtns">
-    <div class="winbtn">—</div>
-    <div class="winbtn">▢</div>
-    <div class="winbtn close">✕</div>
-  </div>
-</div>
-
-<div class="content">
-
-<div class="top">
-  <div class="pfp"><img id="pfp"></div>
-  <div>
-    <div class="name" id="name">loading…</div>
-    <div class="handle" id="handle">@discord</div>
-    <div class="tagline">windows 10 vibe • guns.lol hover</div>
-
-    <div class="pills">
-      <div class="pill"><div id="statusDot" class="sDot"></div><span id="statusText">offline</span></div>
-      <div class="pill">views <span id="views">…</span></div>
-      <div class="pill">ping <span id="ping">…</span></div>
-    </div>
-  </div>
-</div>
-
-<div class="grid">
-
-<div class="panel">
-  <h2>about</h2>
-  clean windows app style bio page.
-  <br>
-  <a class="btn" href="https://github.com" target="_blank">GitHub</a>
-</div>
-
-<div class="panel">
-  <h2>live</h2>
-  <div>activity: <span id="activity">—</span></div>
-  <div style="margin-top:8px;">spotify: <span id="spotify">not playing</span></div>
-
-  <div style="margin-top:12px;">
-    <iframe
-      id="spotifyEmbed"
-      style="border-radius:8px;width:100%;height:152px;border:1px solid rgba(255,255,255,.1);"
-      src="https://open.spotify.com/embed/track/1ZgMsA55GIY7ICkQh5MILA?theme=0"
-      frameborder="0"
-      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-      loading="lazy">
-    </iframe>
-  </div>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="footer">
-  <span>© <span id="year"></span></span>
-  <span>vercel • lanyard • countapi</span>
-</div>
-
-</div>
 </div>
 
 <script>
-const USER_ID="1377987625129869373";
-const COUNT_NAMESPACE="my-bio-khaki";
-const COUNT_KEY="views";
+  // ===== CONFIG =====
+  const USER_ID = "1377987625129869373";
+  const COUNT_NAMESPACE = "my-bio-khaki";
+  const COUNT_KEY = "views";
 
-const $=id=>document.getElementById(id);
+  // fallback song (your link)
+  const FALLBACK_TRACK_ID = "1ZgMsA55GIY7ICkQh5MILA";
 
-function setStatus(s){
-  $("statusText").textContent=s;
-  $("statusDot").className="sDot "+s;
-}
+  const $ = (id) => document.getElementById(id);
 
-async function loadViews(){
-  try{
-    const r=await fetch(`https://api.countapi.xyz/hit/${COUNT_NAMESPACE}/${COUNT_KEY}`);
-    const j=await r.json();
-    $("views").textContent=j.value;
-  }catch{}
-}
+  // ===== guns.lol-ish tilt + spotlight that follows mouse =====
+  const tilt = $("tilt");
+  const maxTilt = 7;
 
-function pickActivity(d){
-  const acts=d.activities||[];
-  return acts.find(a=>a.type!==4)||acts[0]||null;
-}
-
-function setSpotify(sp){
-  const embed=$("spotifyEmbed");
-
-  if(!sp){
-    $("spotify").textContent="not playing";
-    embed.src="https://open.spotify.com/embed/track/1ZgMsA55GIY7ICkQh5MILA?theme=0";
-    return;
+  function setSpotlightVars(clientX, clientY){
+    const r = tilt.getBoundingClientRect();
+    const mx = ((clientX - r.left) / r.width) * 100;
+    const my = ((clientY - r.top) / r.height) * 100;
+    tilt.style.setProperty("--mx", mx + "%");
+    tilt.style.setProperty("--my", my + "%");
   }
 
-  $("spotify").textContent=`${sp.song} — ${sp.artist}`;
+  tilt.addEventListener("mousemove", (e) => {
+    const r = tilt.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;
+    const py = (e.clientY - r.top) / r.height;
 
-  if(sp.track_id){
-    embed.src=`https://open.spotify.com/embed/track/${sp.track_id}?theme=0`;
+    const ry = (px - 0.5) * (maxTilt * 2);
+    const rx = (0.5 - py) * (maxTilt * 2);
+
+    tilt.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-2px)`;
+    setSpotlightVars(e.clientX, e.clientY);
+  });
+
+  tilt.addEventListener("mouseleave", () => {
+    tilt.style.transform = `perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+    tilt.style.setProperty("--mx", "50%");
+    tilt.style.setProperty("--my", "50%");
+  });
+
+  // ===== clock =====
+  function setClock(){
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2,"0");
+    const mm = String(d.getMinutes()).padStart(2,"0");
+    $("clock").textContent = `${hh}:${mm}`;
   }
-}
 
-async function loadDiscord(){
-  const t0=performance.now();
-  const r=await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`);
-  const j=await r.json();
-  const d=j.data;
-  if(!d)return;
-
-  const u=d.discord_user;
-  $("name").textContent=u.global_name||u.username;
-  $("handle").textContent="@"+u.username;
-
-  if(u.avatar){
-    $("pfp").src=`https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=256`;
+  // ===== views (CountAPI + local fallback) =====
+  async function loadViews(){
+    try{
+      const r = await fetch(`https://api.countapi.xyz/hit/${encodeURIComponent(COUNT_NAMESPACE)}/${encodeURIComponent(COUNT_KEY)}`, { cache:"no-store" });
+      const j = await r.json();
+      $("views").textContent = (j.value ?? 0).toLocaleString();
+    }catch{
+      const k = "local_views_v1";
+      const n = (Number(localStorage.getItem(k)||0) + 1);
+      localStorage.setItem(k, String(n));
+      $("views").textContent = n.toLocaleString();
+    }
   }
 
-  setStatus(d.discord_status||"offline");
-  $("ping").textContent=Math.round(performance.now()-t0)+"ms";
+  // ===== discord presence (Lanyard) =====
+  function msPing(start){
+    return Math.max(0, Math.round(performance.now() - start));
+  }
 
-  const act=pickActivity(d);
-  $("activity").textContent=act?act.name:"none";
+  function setStatus(status){
+    const s = status || "offline";
+    $("statusText").textContent = s;
+    $("statusDot").className = "sDot " + s;
+  }
 
-  setSpotify(d.spotify||null);
-}
+  function pickActivity(data){
+    const acts = Array.isArray(data.activities) ? data.activities : [];
+    const nonCustom = acts.find(a => a && a.name && a.type !== 4);
+    const custom = acts.find(a => a && a.name && a.type === 4);
+    return nonCustom || custom || null;
+  }
 
-$("year").textContent=new Date().getFullYear();
-loadViews();
-loadDiscord();
-setInterval(loadDiscord,15000);
+  function setActivity(act){
+    if(!act){
+      $("activity").textContent = "none";
+      return;
+    }
+    const details = act.details || act.state || "";
+    $("activity").textContent = details ? `${act.name} — ${details}` : act.name;
+  }
+
+  // IMPORTANT: prevent spotify iframe restarting
+  let currentEmbedTrackId = FALLBACK_TRACK_ID;
+
+  function setSpotify(sp){
+    const embed = $("spotifyEmbed");
+
+    if(!sp){
+      $("spotifyText").textContent = "not playing";
+      // Keep fallback track without reloading if already set
+      if(currentEmbedTrackId !== FALLBACK_TRACK_ID){
+        currentEmbedTrackId = FALLBACK_TRACK_ID;
+        embed.src = `https://open.spotify.com/embed/track/${FALLBACK_TRACK_ID}?utm_source=generator&theme=0`;
+      }
+      return;
+    }
+
+    $("spotifyText").textContent = `${sp.song} — ${sp.artist}`;
+
+    // Only change iframe if track actually changed
+    if(sp.track_id && sp.track_id !== currentEmbedTrackId){
+      currentEmbedTrackId = sp.track_id;
+      embed.src = `https://open.spotify.com/embed/track/${sp.track_id}?utm_source=generator&theme=0`;
+    }
+  }
+
+  async function loadDiscord(){
+    const t0 = performance.now();
+    try{
+      $("debug").textContent = "connecting…";
+
+      const r = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`, { cache:"no-store" });
+      $("ping").textContent = msPing(t0) + "ms";
+
+      const j = await r.json();
+      const d = j?.data;
+      if(!d){
+        $("debug").textContent = "no data (blocked/wrong id?)";
+        $("name").textContent = "unknown";
+        $("handle").textContent = "@discord";
+        setStatus("offline");
+        setActivity(null);
+        setSpotify(null);
+        return;
+      }
+
+      const u = d.discord_user || {};
+      $("name").textContent = u.global_name || u.username || "user";
+      $("handle").textContent = u.username ? `@${u.username}` : "@discord";
+
+      if(u.id && u.avatar){
+        const ext = u.avatar.startsWith("a_") ? "gif" : "png";
+        $("pfp").src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${ext}?size=256`;
+      }else{
+        $("pfp").src = "https://cdn.discordapp.com/embed/avatars/0.png";
+      }
+
+      setStatus(d.discord_status || "offline");
+      setActivity(pickActivity(d));
+      setSpotify(d.spotify || null);
+
+      $("debug").textContent = "connected ✓";
+    }catch{
+      $("debug").textContent = "blocked by network/adblock";
+      setStatus("offline");
+    }
+  }
+
+  // init
+  $("year").textContent = new Date().getFullYear();
+  setClock();
+  setInterval(setClock, 10000);
+
+  loadViews();
+  loadDiscord();
+  // 15s refresh; spotify iframe will NOT restart unless track_id changed
+  setInterval(loadDiscord, 15000);
 </script>
 
 </body>
