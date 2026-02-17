@@ -10,8 +10,8 @@
     --text:#f2f6ff;
     --muted:#a8b3c7;
 
-    --panel: rgba(18,20,28,.62);
     --stroke: rgba(255,255,255,.12);
+    --panel: rgba(18,20,28,.62);
 
     --blue:#4aa3ff;
     --purple:#a78bfa;
@@ -23,23 +23,25 @@
 
     --radius:12px;
     --shadow: 0 25px 90px rgba(0,0,0,.72);
+
+    --taskbarH: 54px;
   }
 
   *{box-sizing:border-box}
   html,body{height:100%}
+
   body{
     margin:0;
     font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
     color:var(--text);
     background:#05060a;
-    overflow:hidden; /* for dragging (no scroll bounce) */
+    overflow:hidden;
   }
 
   /* ===== YouTube background ===== */
   .bg{ position:fixed; inset:0; z-index:-3; overflow:hidden; }
   .bg iframe{
-    position:absolute;
-    top:50%; left:50%;
+    position:absolute; top:50%; left:50%;
     width:160vw; height:90vw;
     min-width:160vh; min-height:90vh;
     transform:translate(-50%,-50%);
@@ -62,24 +64,24 @@
     mix-blend-mode: overlay;
   }
 
-  /* ===== Draggable stage ===== */
+  /* ===== Stage ===== */
   .stage{
     position:fixed;
     inset:0;
-    display:block;
+    padding-bottom: var(--taskbarH);
   }
 
-  /* the draggable container (we move this) */
+  /* draggable container */
   .dragWrap{
     position:absolute;
     left:50%;
     top:50%;
     transform: translate(-50%,-50%);
     width:min(820px, calc(100% - 28px));
-    touch-action:none; /* allow pointer drag */
+    touch-action:none;
   }
 
-  /* ===== guns.lol-ish hover: tilt + spotlight + glow ===== */
+  /* hover glow */
   .tilt{
     width:100%;
     transform-style:preserve-3d;
@@ -116,7 +118,7 @@
   }
   .tilt:hover::before,.tilt:hover::after{opacity:1}
 
-  /* ===== Win10 window ===== */
+  /* window */
   .window{
     border-radius:var(--radius);
     overflow:hidden;
@@ -125,6 +127,7 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: var(--shadow);
+
     transform: translateY(10px);
     opacity:0;
     pointer-events:none;
@@ -134,6 +137,13 @@
     opacity:1;
     transform: translateY(0);
     pointer-events:auto;
+  }
+
+  /* minimized state */
+  body.minimized .window{
+    opacity:0;
+    pointer-events:none;
+    transform: translateY(16px);
   }
 
   .titlebar{
@@ -146,22 +156,16 @@
     border-bottom:1px solid rgba(255,255,255,.08);
     user-select:none;
     gap:10px;
-    cursor: grab; /* draggable */
+    cursor: grab;
   }
   .titlebar:active{ cursor: grabbing; }
 
-  .titleLeft{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    min-width:0;
-  }
   .title{
     display:flex;
     align-items:center;
     gap:8px;
     font-size:13px;
-    font-weight:600;
+    font-weight:650;
     color:rgba(242,246,255,.92);
     white-space:nowrap;
   }
@@ -178,79 +182,14 @@
     padding:6px 0;
     border-left:1px solid rgba(255,255,255,.06);
     color:rgba(242,246,255,.85);
-    cursor: default;
+    cursor:pointer;
   }
   .winbtn:hover{background:rgba(255,255,255,.08)}
   .winbtn.close:hover{background:rgba(239,68,68,.25)}
 
-  /* ===== Volume widget ===== */
-  .volWidget{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:6px 10px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,.12);
-    background: rgba(18,20,28,.35);
-    box-shadow: 0 10px 40px rgba(0,0,0,.35);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    max-width: 280px;
-    cursor: default;
-  }
-  .volBtn{
-    width:26px; height:26px;
-    border-radius:9px;
-    display:grid;
-    place-items:center;
-    border:1px solid rgba(255,255,255,.12);
-    background: rgba(255,255,255,.05);
-    cursor:pointer;
-    flex:0 0 auto;
-  }
-  .volBtn:hover{ background: rgba(255,255,255,.08); }
-  .volBtn svg{ width:15px; height:15px; opacity:.92; }
-
-  .volRange{ width:160px; height:18px; display:flex; align-items:center; }
-
-  input[type="range"]{
-    -webkit-appearance:none;
-    appearance:none;
-    width:100%;
-    height:4px;
-    border-radius:999px;
-    background: rgba(255,255,255,.22);
-    outline:none;
-  }
-  input[type="range"]::-webkit-slider-thumb{
-    -webkit-appearance:none;
-    appearance:none;
-    width:14px;height:14px;border-radius:999px;
-    background: rgba(255,255,255,.92);
-    border:1px solid rgba(0,0,0,.35);
-    box-shadow: 0 8px 20px rgba(0,0,0,.45);
-  }
-  input[type="range"]::-moz-range-thumb{
-    width:14px;height:14px;border-radius:999px;
-    background: rgba(255,255,255,.92);
-    border:1px solid rgba(0,0,0,.35);
-  }
-  input[type="range"]::-moz-range-track{
-    height:4px;border-radius:999px;
-    background: rgba(255,255,255,.22);
-  }
-
-  .volPct{
-    font-size:12px;
-    color: rgba(168,179,199,.95);
-    font-weight:700;
-    width:42px;
-    text-align:right;
-    cursor: default;
-  }
-
-  /* ===== Symmetric content ===== */
+  /* content (symmetrisch) */
   .content{ padding:26px 22px 22px; text-align:center; }
+
   .pfp{
     width:104px; height:104px;
     margin: 6px auto 12px;
@@ -326,7 +265,7 @@
 
   audio{display:none}
 
-  /* click-to-enter */
+  /* click-to-enter overlay */
   .gate{
     position:fixed; inset:0;
     display:grid; place-items:center;
@@ -347,101 +286,297 @@
   .gateText .dots{ opacity:.9; animation:dots 1.2s infinite; }
   @keyframes dots{ 0%,20%{opacity:.3} 50%{opacity:1} 100%{opacity:.3} }
 
-  @media (max-width: 860px){
-    .volWidget{ max-width: 220px; }
-    .volRange{ width:120px; }
+  /* ===== TASKBAR ===== */
+  .taskbar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    height:var(--taskbarH);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 10px;
+    z-index:90;
+
+    border-top:1px solid rgba(255,255,255,.10);
+    background: rgba(10,12,18,.55);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 -20px 70px rgba(0,0,0,.55);
+
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .35s ease;
   }
-  @media (max-width: 640px){
-    .titlebar{ height:auto; padding:8px 10px 8px 12px; flex-wrap:wrap; }
-    .winbtns{ margin-left:auto; }
-    .volWidget{ width:100%; max-width:none; justify-content:space-between; }
-    .volRange{ width:100%; }
+  body.entered .taskbar{
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  .tbLeft,.tbRight{display:flex; align-items:center; gap:8px;}
+  .tbCenter{flex:1; display:flex; justify-content:center; align-items:center; gap:8px;}
+
+  .tbBtn{
+    width:38px;height:38px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    display:grid;
+    place-items:center;
+    cursor:pointer;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  .tbBtn:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.07);
+    border-color: rgba(255,255,255,.18);
+  }
+
+  .startMark{
+    width:16px;height:16px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:2px;
+  }
+  .startMark span{
+    background: rgba(242,246,255,.92);
+    border-radius:2px;
+    opacity:.92;
+  }
+
+  .appBtn{
+    min-width:160px;
+    height:38px;
+    padding:0 12px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    cursor:pointer;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  .appBtn:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.07);
+    border-color: rgba(255,255,255,.18);
+  }
+  .appDot{
+    width:14px;height:14px;border-radius:4px;
+    background: linear-gradient(135deg,var(--blue),var(--purple));
+  }
+  .appName{
+    font-size:12.5px;
+    font-weight:800;
+    color: rgba(242,246,255,.92);
+    white-space:nowrap;
+  }
+  .appIndicator{
+    margin-left:auto;
+    width:26px;
+    height:4px;
+    border-radius:999px;
+    background: rgba(255,255,255,.14);
+    position:relative;
+    overflow:hidden;
+  }
+  body.minimized .appIndicator::after{ opacity:.35; }
+  .appIndicator::after{
+    content:"";
+    position:absolute; inset:0;
+    background: rgba(74,163,255,.65);
+    opacity:.95;
+  }
+
+  /* system tray: volume + clock */
+  .tray{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 10px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+  }
+
+  .volBtn{
+    width:28px; height:28px;
+    border-radius:10px;
+    display:grid;
+    place-items:center;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    cursor:pointer;
+  }
+  .volBtn:hover{ background: rgba(255,255,255,.07); }
+  .volBtn svg{ width:16px; height:16px; opacity:.92; }
+
+  .volRange{ width:160px; height:18px; display:flex; align-items:center; }
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:4px;
+    border-radius:999px;
+    background: rgba(255,255,255,.22);
+    outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:14px;height:14px;border-radius:999px;
+    background: rgba(255,255,255,.92);
+    border:1px solid rgba(0,0,0,.35);
+    box-shadow: 0 8px 20px rgba(0,0,0,.45);
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:999px;
+    background: rgba(255,255,255,.92);
+    border:1px solid rgba(0,0,0,.35);
+  }
+  input[type="range"]::-moz-range-track{
+    height:4px;border-radius:999px;
+    background: rgba(255,255,255,.22);
+  }
+
+  .clockBox{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    line-height:1.1;
+    padding:0 2px;
+    min-width:64px;
+  }
+  .clockTime{
+    font-size:12.5px;
+    font-weight:900;
+    color: rgba(242,246,255,.92);
+  }
+  .clockDate{
+    margin-top:2px;
+    font-size:11px;
+    color: rgba(168,179,199,.92);
+    font-weight:700;
+  }
+
+  @media (max-width: 820px){
+    .volRange{width:120px}
+    .appBtn{min-width:140px}
+  }
+  @media (max-width: 560px){
+    .volRange{width:90px}
+    .appBtn{min-width:120px}
+    .clockBox{min-width:58px}
   }
 </style>
 </head>
 
 <body>
-<div class="bg" aria-hidden="true">
-  <iframe
-    src="https://www.youtube.com/embed/Ulm_Z646eBg?autoplay=1&mute=1&controls=0&rel=0&playsinline=1&loop=1&playlist=Ulm_Z646eBg&modestbranding=1&iv_load_policy=3&disablekb=1"
-    title="background"
-    frameborder="0"
-    allow="autoplay; encrypted-media"
-    referrerpolicy="strict-origin-when-cross-origin"></iframe>
-</div>
-<div class="bgOverlay" aria-hidden="true"></div>
-<div class="noise" aria-hidden="true"></div>
+  <div class="bg" aria-hidden="true">
+    <iframe
+      src="https://www.youtube.com/embed/Ulm_Z646eBg?autoplay=1&mute=1&controls=0&rel=0&playsinline=1&loop=1&playlist=Ulm_Z646eBg&modestbranding=1&iv_load_policy=3&disablekb=1"
+      title="background"
+      frameborder="0"
+      allow="autoplay; encrypted-media"
+      referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+  <div class="bgOverlay" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
 
-<div class="gate" id="gate"><div class="gateText">click to enter<span class="dots">...</span></div></div>
+  <div class="gate" id="gate">
+    <div class="gateText">click to enter<span class="dots">...</span></div>
+  </div>
 
-<div class="stage">
-  <div class="dragWrap" id="dragWrap">
-    <div class="tilt" id="tilt">
-      <section class="window">
-        <div class="titlebar" id="titlebar">
-          <div class="titleLeft">
+  <div class="stage">
+    <div class="dragWrap" id="dragWrap">
+      <div class="tilt" id="tilt">
+        <section class="window" id="window">
+          <div class="titlebar" id="titlebar">
             <div class="title"><div class="icon"></div> discord.exe</div>
-
-            <div class="volWidget" title="Volume">
-              <div class="volBtn" id="muteBtn" aria-label="mute">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M11 5 7.5 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h3.5L11 19V5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-                  <path id="wave1" d="M14.5 9.2c.6.7.9 1.7.9 2.8s-.3 2.1-.9 2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                  <path id="wave2" d="M16.8 7.2c1.1 1.2 1.7 2.9 1.7 4.8s-.6 3.6-1.7 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>
-                </svg>
-              </div>
-
-              <div class="volRange">
-                <input id="vol" type="range" min="0" max="100" value="5" />
-              </div>
-
-              <div class="volPct mono" id="volPct">5%</div>
+            <div class="winbtns">
+              <div class="winbtn" id="btnMin">—</div>
+              <div class="winbtn" id="btnMax">▢</div>
+              <div class="winbtn close" id="btnClose">✕</div>
             </div>
           </div>
 
-          <div class="winbtns" aria-hidden="true">
-            <div class="winbtn">—</div>
-            <div class="winbtn">▢</div>
-            <div class="winbtn close">✕</div>
-          </div>
-        </div>
+          <div class="content">
+            <div class="pfp"><img id="pfp" alt="pfp" src="https://cdn.discordapp.com/embed/avatars/0.png"></div>
+            <h1 id="name">loading…</h1>
+            <div class="handle" id="handle">@discord</div>
+            <div class="tagline" id="tagline">windows look • guns.lol hover • clean</div>
 
-        <div class="content">
-          <div class="pfp"><img id="pfp" alt="pfp" src="https://cdn.discordapp.com/embed/avatars/0.png"></div>
-          <h1 id="name">loading…</h1>
-          <div class="handle" id="handle">@discord</div>
-          <div class="tagline" id="tagline">windows look • guns.lol hover • clean</div>
-
-          <div class="pills">
-            <div class="pill" title="Discord status">
-              <div id="statusDot" class="sDot offline"></div>
-              <span id="statusText">offline</span>
+            <div class="pills">
+              <div class="pill" title="Discord status">
+                <div id="statusDot" class="sDot offline"></div>
+                <span id="statusText">offline</span>
+              </div>
+              <div class="pill" title="Views">views <span class="mono" id="views">…</span></div>
+              <div class="pill" title="Ping">ping <span class="mono" id="ping">…</span></div>
             </div>
-            <div class="pill" title="Views">views <span class="mono" id="views">…</span></div>
-            <div class="pill" title="Ping">ping <span class="mono" id="ping">…</span></div>
-            <div class="pill" title="Local time">time <span class="mono" id="clock">--:--</span></div>
+
+            <div class="links">
+              <a class="btn" href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
+              <a class="btn" href="https://x.com" target="_blank" rel="noreferrer">X</a>
+              <a class="btn" href="mailto:you@example.com">Mail</a>
+              <a class="btn" href="https://discord.com" target="_blank" rel="noreferrer">Discord</a>
+            </div>
           </div>
 
-          <div class="links">
-            <a class="btn" href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
-            <a class="btn" href="https://x.com" target="_blank" rel="noreferrer">X</a>
-            <a class="btn" href="mailto:you@example.com">Mail</a>
-            <a class="btn" href="https://discord.com" target="_blank" rel="noreferrer">Discord</a>
+          <div class="footer">
+            <span>© <span id="year"></span></span>
+            <span class="mono">vercel • lanyard • countapi</span>
           </div>
-        </div>
-
-        <div class="footer">
-          <span>© <span id="year"></span></span>
-          <span class="mono">vercel • lanyard • countapi</span>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   </div>
-</div>
 
-<audio id="bgMusic" loop preload="auto">
-  <source src="/space-song-lyrics.mp3" type="audio/mpeg">
-</audio>
+  <!-- TASKBAR -->
+  <div class="taskbar" id="taskbar">
+    <div class="tbLeft">
+      <div class="tbBtn" title="Start">
+        <div class="startMark" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbCenter">
+      <div class="appBtn" id="appToggle" title="discord.exe">
+        <div class="appDot"></div>
+        <div class="appName">discord.exe</div>
+        <div class="appIndicator" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="tbRight">
+      <div class="tray">
+        <div class="volBtn" id="muteBtn" title="Volume">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M11 5 7.5 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h3.5L11 19V5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path id="wave1" d="M14.5 9.2c.6.7.9 1.7.9 2.8s-.3 2.1-.9 2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path id="wave2" d="M16.8 7.2c1.1 1.2 1.7 2.9 1.7 4.8s-.6 3.6-1.7 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>
+          </svg>
+        </div>
+
+        <div class="volRange">
+          <input id="vol" type="range" min="0" max="100" value="5" />
+        </div>
+
+        <div class="clockBox">
+          <div class="clockTime mono" id="clock">--:--</div>
+          <div class="clockDate mono" id="date">--.--</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MP3 -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="/space-song-lyrics.mp3" type="audio/mpeg">
+  </audio>
 
 <script>
   const USER_ID = "1377987625129869373";
@@ -449,7 +584,7 @@
   const COUNT_KEY = "views";
   const $ = (id) => document.getElementById(id);
 
-  // hover tilt + spotlight
+  // ===== guns.lol-ish hover tilt =====
   const tilt = $("tilt");
   const maxTilt = 7;
 
@@ -461,13 +596,6 @@
     tilt.style.setProperty("--my", my + "%");
   }
 
-  tilt.addEventListener("mousemove", (e) => {
-    const r = tilt.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width;
-    const py = (e.clientX - r.top) / r.height; // corrected below
-  });
-
-  // (Fix: correct py calculation)
   tilt.addEventListener("mousemove", (e) => {
     const r = tilt.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width;
@@ -486,13 +614,19 @@
     tilt.style.setProperty("--my", "50%");
   });
 
-  // clock
+  // ===== clock + date =====
   function setClock(){
     const d = new Date();
-    $("clock").textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+    const hh = String(d.getHours()).padStart(2,"0");
+    const mm = String(d.getMinutes()).padStart(2,"0");
+    $("clock").textContent = `${hh}:${mm}`;
+
+    const day = String(d.getDate()).padStart(2,"0");
+    const mon = String(d.getMonth()+1).padStart(2,"0");
+    $("date").textContent = `${day}.${mon}`;
   }
 
-  // views
+  // ===== views =====
   async function loadViews(){
     try{
       const r = await fetch(`https://api.countapi.xyz/hit/${encodeURIComponent(COUNT_NAMESPACE)}/${encodeURIComponent(COUNT_KEY)}`, { cache:"no-store" });
@@ -506,7 +640,7 @@
     }
   }
 
-  // discord
+  // ===== discord =====
   function msPing(start){ return Math.max(0, Math.round(performance.now() - start)); }
   function setStatus(status){
     const s = status || "offline";
@@ -546,10 +680,9 @@
     }
   }
 
-  // audio volume widget
+  // ===== audio + taskbar volume =====
   const audio = $("bgMusic");
   const vol = $("vol");
-  const volPct = $("volPct");
   const muteBtn = $("muteBtn");
   const wave1 = document.getElementById("wave1");
   const wave2 = document.getElementById("wave2");
@@ -560,7 +693,6 @@
     audio.volume = Math.max(0, Math.min(1, v01));
     const pct = Math.round(audio.volume * 100);
     vol.value = String(pct);
-    volPct.textContent = pct + "%";
 
     const muted = audio.muted || pct === 0;
     wave1.style.opacity = muted ? "0" : "1";
@@ -588,6 +720,7 @@
   // default volume = 5%
   applyVolume(0.05);
 
+  // ===== enter gate =====
   async function enter(){
     if(document.body.classList.contains("entered")) return;
     document.body.classList.add("entered");
@@ -599,29 +732,36 @@
   }
   $("gate").addEventListener("click", enter);
 
-  // draggable window (titlebar drag)
+  // ===== minimize/restore to taskbar =====
+  function minimize(){ document.body.classList.add("minimized"); }
+  function restore(){ document.body.classList.remove("minimized"); }
+  function toggleMinimize(){
+    if(!document.body.classList.contains("entered")) return;
+    document.body.classList.toggle("minimized");
+  }
+
+  $("appToggle").addEventListener("click", toggleMinimize);
+  $("btnMin").addEventListener("click", minimize);
+  $("btnClose").addEventListener("click", minimize);
+  $("btnMax").addEventListener("click", () => {
+    // quick "re-center"
+    const w = $("dragWrap");
+    w.style.left = "50%";
+    w.style.top = "50%";
+    w.style.transform = "translate(-50%,-50%)";
+  });
+
+  // ===== draggable window =====
   const dragWrap = $("dragWrap");
   const titlebar = $("titlebar");
 
-  let dragging = false;
-  let startX = 0, startY = 0;
-  let baseLeft = 0, baseTop = 0;
-
-  function getCurrentPos(){
-    // We store translate via left/top on element
-    const left = parseFloat(dragWrap.style.left || "50");
-    const top  = parseFloat(dragWrap.style.top  || "50");
-    const unitLeft = (dragWrap.style.left || "50%").includes("%") ? "%" : "px";
-    const unitTop  = (dragWrap.style.top  || "50%").includes("%") ? "%" : "px";
-    return { left, top, unitLeft, unitTop };
-  }
+  let dragging=false, startX=0, startY=0, baseLeft=0, baseTop=0;
 
   function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
 
   titlebar.addEventListener("pointerdown", (e) => {
-    // don't start drag when interacting with slider/button
-    const blocked = e.target.closest(".volWidget, .winbtns");
-    if(blocked) return;
+    // only drag when not minimized
+    if(document.body.classList.contains("minimized")) return;
 
     dragging = true;
     titlebar.setPointerCapture(e.pointerId);
@@ -630,7 +770,6 @@
     startX = e.clientX;
     startY = e.clientY;
 
-    // switch to px positioning for accurate drag
     dragWrap.style.left = rect.left + "px";
     dragWrap.style.top = rect.top + "px";
     dragWrap.style.transform = "none";
@@ -646,7 +785,7 @@
     const dy = e.clientY - startY;
 
     const winW = window.innerWidth;
-    const winH = window.innerHeight;
+    const winH = window.innerHeight - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--taskbarH"));
 
     const rect = dragWrap.getBoundingClientRect();
     const w = rect.width;
@@ -655,7 +794,6 @@
     let nextLeft = baseLeft + dx;
     let nextTop  = baseTop + dy;
 
-    // keep inside screen with small margin
     const margin = 10;
     nextLeft = clamp(nextLeft, margin, winW - w - margin);
     nextTop  = clamp(nextTop, margin, winH - h - margin);
@@ -664,8 +802,8 @@
     dragWrap.style.top  = nextTop + "px";
   });
 
-  titlebar.addEventListener("pointerup", () => { dragging = false; });
-  titlebar.addEventListener("pointercancel", () => { dragging = false; });
+  titlebar.addEventListener("pointerup", () => dragging=false);
+  titlebar.addEventListener("pointercancel", () => dragging=false);
 
   // init
   $("year").textContent = new Date().getFullYear();
@@ -673,7 +811,9 @@
   setInterval(setClock, 10000);
 
   setInterval(() => {
-    if(document.body.classList.contains("entered")) loadDiscord();
+    if(document.body.classList.contains("entered") && !document.body.classList.contains("minimized")) {
+      loadDiscord();
+    }
   }, 15000);
 </script>
 </body>
