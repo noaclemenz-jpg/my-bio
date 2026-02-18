@@ -187,7 +187,7 @@
   }
   .winbtn.disabled:hover{background:transparent}
 
-  /* ===== Content (symmetrisch) ===== */
+  /* ===== Content ===== */
   .content{ padding:28px 24px 22px; text-align:center; }
 
   .pfpWrap{
@@ -204,7 +204,6 @@
   }
   .pfp img{width:100%;height:100%;object-fit:cover;display:block}
 
-  /* status dot on pfp (black skin) */
   .pfpStatus{
     position:absolute;
     right:-2px;
@@ -212,7 +211,7 @@
     width:18px;
     height:18px;
     border-radius:999px;
-    background: #0b0d13;                 /* black skin */
+    background: #0b0d13;
     border:1px solid rgba(255,255,255,.10);
     box-shadow: 0 10px 30px rgba(0,0,0,.55);
     display:grid;
@@ -379,11 +378,16 @@
     gap:10px;
     cursor:pointer;
     transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    position:relative;
   }
   .appBtn:hover{
     transform: translateY(-1px);
     background: rgba(255,255,255,.07);
     border-color: rgba(255,255,255,.18);
+  }
+  .appBtn.active{
+    background: rgba(74,163,255,.10);
+    border-color: rgba(74,163,255,.28);
   }
   .appDot{
     width:14px;height:14px;border-radius:4px;
@@ -749,38 +753,67 @@
 
     loadViews();
     loadDiscord();
+    updateTaskbarActive();
   }
   $("gate").addEventListener("click", enter);
 
-  // ===== minimize/close behavior =====
+  // ===== minimize/close behavior (TASKBAR ONLY to reopen) =====
+  const appToggle = $("appToggle");
+
+  function isHidden(){
+    return document.body.classList.contains("minimized") || document.body.classList.contains("closed");
+  }
+
   function minimize(){
+    // hide window; only taskbar can restore
     document.body.classList.add("minimized");
     document.body.classList.remove("closed");
+    updateTaskbarActive();
   }
+
   function closeWindow(){
-    // "close" = hide window, keep taskbar (guns.lol vibe)
+    // "close" = hide window; only taskbar can restore
     document.body.classList.add("closed");
     document.body.classList.remove("minimized");
+    updateTaskbarActive();
   }
-  function restore(){
+
+  function restoreFromTaskbar(){
+    // ONLY place that can show window again
     document.body.classList.remove("minimized");
     document.body.classList.remove("closed");
+    updateTaskbarActive();
   }
+
   function toggleFromTaskbar(){
     if(!document.body.classList.contains("entered")) return;
-    if(document.body.classList.contains("minimized") || document.body.classList.contains("closed")){
-      restore();
+
+    // like Windows: click taskbar button toggles minimize/restore
+    if(isHidden()){
+      restoreFromTaskbar();
     }else{
       minimize();
     }
   }
 
-  $("btnMin").addEventListener("click", minimize);
-  $("btnClose").addEventListener("click", closeWindow);
-  // fullscreen disabled: do nothing
-  $("btnMax").addEventListener("click", (e) => { e.preventDefault(); });
+  function updateTaskbarActive(){
+    const active = document.body.classList.contains("entered") && !isHidden();
+    appToggle.classList.toggle("active", active);
+  }
 
-  $("appToggle").addEventListener("click", toggleFromTaskbar);
+  $("btnMin").addEventListener("click", (e) => { e.stopPropagation(); minimize(); });
+  $("btnClose").addEventListener("click", (e) => { e.stopPropagation(); closeWindow(); });
+
+  // fullscreen disabled: do nothing
+  $("btnMax").addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); });
+
+  // IMPORTANT: only taskbar can restore
+  appToggle.addEventListener("click", toggleFromTaskbar);
+
+  // (optional safety) clicking window won't restore anything anyway, but keep it clean:
+  document.addEventListener("keydown", (e) => {
+    // prevent "Escape" from restoring or anything; do nothing
+  });
 
   // ===== draggable window =====
   const dragWrap = $("dragWrap");
@@ -790,7 +823,7 @@
   function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
 
   titlebar.addEventListener("pointerdown", (e) => {
-    if(document.body.classList.contains("minimized") || document.body.classList.contains("closed")) return;
+    if(isHidden()) return;
 
     dragging = true;
     titlebar.setPointerCapture(e.pointerId);
