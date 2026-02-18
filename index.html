@@ -652,7 +652,7 @@
                 <div class="midLine" id="customStatus2">—</div>
               </div>
 
-              <div class="card">
+              <div class="card" id="activityCard">
                 <div class="cardTitle">
                   <h3>Activity</h3>
                   <div class="smallMuted mono" id="activityType">—</div>
@@ -828,6 +828,7 @@
         $("activityType").textContent = "—";
         $("activityName").textContent = "—";
         $("activityDetails").textContent = "—";
+        const ac = $("activityCard"); if(ac) ac.style.display = "";
         return;
       }
 
@@ -849,14 +850,23 @@
       $("customStatus2").textContent = custom === "—" ? "no custom status set" : "custom status";
 
       const mainA = pickMainActivity(d.activities);
-      const f = formatActivity(mainA);
-      $("activityType").textContent = f.type;
-      $("activityName").textContent = f.name;
-      $("activityDetails").textContent = f.details;
+      const ac = $("activityCard");
+
+      if(!mainA){
+        // hide activity card when user has no activity
+        if(ac) ac.style.display = "none";
+      }else{
+        if(ac) ac.style.display = "";
+        const f = formatActivity(mainA);
+        $("activityType").textContent = f.type;
+        $("activityName").textContent = f.name;
+        $("activityDetails").textContent = f.details;
+      }
 
       setUpdated();
     }catch{
       applyStatus("offline");
+      const ac = $("activityCard"); if(ac) ac.style.display = "";
     }
   }
 
