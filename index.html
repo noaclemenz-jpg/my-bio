@@ -6,204 +6,1043 @@
 <title>discord.exe</title>
 
 <style>
-:root{
-  --text:#f2f6ff;
-  --muted:#a8b3c7;
-  --blue:#4aa3ff;
-  --purple:#a78bfa;
-  --green:#22c55e;
-  --amber:#f59e0b;
-  --red:#ef4444;
-  --gray:#64748b;
-  --radius:12px;
-  --shadow:0 28px 110px rgba(0,0,0,.78);
-  --taskbarH:54px;
-}
+  :root{
+    --text:#f2f6ff;
+    --muted:#a8b3c7;
+    --stroke: rgba(255,255,255,.12);
 
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
-  color:var(--text);
-  background:#05060a;
-  overflow:hidden;
-}
+    --blue:#4aa3ff;
+    --purple:#a78bfa;
 
-/* ===== Window ===== */
-.window{
-  border-radius:var(--radius);
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.13);
-  background:linear-gradient(180deg,rgba(18,20,28,.75),rgba(18,20,28,.45));
-  backdrop-filter:blur(18px);
-  box-shadow:var(--shadow);
-  width:min(860px,calc(100% - 28px));
-  margin:80px auto 0;
-}
+    --green:#22c55e;
+    --amber:#f59e0b;
+    --red:#ef4444;
+    --gray:#64748b;
 
-.titlebar{
-  height:42px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0 12px;
-  background:rgba(255,255,255,.05);
-  border-bottom:1px solid rgba(255,255,255,.085);
-}
+    --radius:12px;
+    --shadow: 0 28px 110px rgba(0,0,0,.78);
 
-.title{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:13px;
-  font-weight:650;
-}
-.icon{
-  width:14px;height:14px;border-radius:4px;
-  background:linear-gradient(135deg,var(--blue),var(--purple));
-}
+    --taskbarH: 54px;
+  }
 
-.winbtns{display:flex}
-.winbtn{
-  width:46px;height:42px;
-  display:grid;place-items:center;
-  cursor:pointer;
-}
-.winbtn:hover{background:rgba(255,255,255,.08)}
-.winbtn.close:hover{background:rgba(239,68,68,.26)}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    color:var(--text);
+    background:#05060a;
+    overflow:hidden;
+  }
 
-/* ===== Content ===== */
-.content{padding:40px 24px 30px;text-align:center}
+  /* ===== Background ===== */
+  .bg{ position:fixed; inset:0; z-index:-3; overflow:hidden; }
+  .bg iframe{
+    position:absolute; top:50%; left:50%;
+    width:160vw; height:90vw;
+    min-width:160vh; min-height:90vh;
+    transform:translate(-50%,-50%);
+    filter: blur(6px);
+    opacity:.48;
+    pointer-events:none;
+  }
+  .bgOverlay{
+    position:fixed; inset:0; z-index:-2;
+    background:
+      radial-gradient(900px 520px at 15% 18%, rgba(74,163,255,.11), transparent 60%),
+      radial-gradient(820px 640px at 86% 25%, rgba(167,139,250,.11), transparent 60%),
+      linear-gradient(180deg, rgba(10,12,18,.55), rgba(5,6,10,.78));
+  }
+  .noise{
+    pointer-events:none;
+    position:fixed; inset:0; z-index:-1;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
+    opacity:.05;
+    mix-blend-mode: overlay;
+  }
 
-.pfpWrap{
-  width:120px;
-  height:120px;
-  margin:0 auto 16px;
-  position:relative;
-}
+  .stage{ position:fixed; inset:0; padding-bottom:var(--taskbarH); }
 
-.pfp{
-  width:120px;
-  height:120px;
-  border-radius:16px;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.16);
-}
-.pfp img{width:100%;height:100%;object-fit:cover}
+  /* draggable container */
+  .dragWrap{
+    position:absolute;
+    left:50%; top:50%;
+    transform: translate(-50%,-50%);
+    width:min(880px, calc(100% - 28px));
+    touch-action:none;
+  }
 
-/* ===== BIGGER STATUS DOT ===== */
-.pfpStatus{
-  position:absolute;
-  right:-6px;
-  bottom:-6px;
-  width:30px;
-  height:30px;
-  border-radius:999px;
-  background:#0b0d13;
-  border:2px solid rgba(255,255,255,.15);
-  box-shadow:0 14px 40px rgba(0,0,0,.7);
-  display:grid;
-  place-items:center;
-}
+  /* ===== guns.lol-ish hover ===== */
+  .tilt{
+    width:100%;
+    transform-style:preserve-3d;
+    will-change:transform;
+    transition:transform .14s ease;
+    position:relative;
+  }
+  .tilt::before{
+    content:"";
+    position:absolute; inset:-2px;
+    border-radius: calc(var(--radius) + 2px);
+    background: radial-gradient(760px 380px at var(--mx,50%) var(--my,50%),
+      rgba(74,163,255,.22),
+      rgba(167,139,250,.12) 42%,
+      transparent 64%);
+    opacity:0;
+    transition: opacity .14s ease;
+    pointer-events:none;
+    filter: blur(2px);
+  }
+  .tilt::after{
+    content:"";
+    position:absolute; inset:-1px;
+    border-radius: calc(var(--radius) + 1px);
+    background: linear-gradient(120deg,
+      rgba(74,163,255,0),
+      rgba(74,163,255,.22),
+      rgba(167,139,250,.18),
+      rgba(74,163,255,0));
+    opacity:0;
+    transition: opacity .14s ease;
+    pointer-events:none;
+    filter: blur(12px);
+  }
+  .tilt:hover::before,.tilt:hover::after{opacity:1}
 
-.pfpStatus .dot{
-  width:18px;
-  height:18px;
-  border-radius:999px;
-  background:var(--gray);
-}
+  /* ===== Window ===== */
+  .window{
+    border-radius:var(--radius);
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.13);
+    background: linear-gradient(180deg, rgba(18,20,28,.72), rgba(18,20,28,.42));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: var(--shadow);
 
-.dot.online{background:var(--green)}
-.dot.idle{background:var(--amber)}
-.dot.dnd{background:var(--red)}
-.dot.offline{background:var(--gray)}
+    transform: translateY(10px);
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .28s ease, transform .28s ease;
+  }
+  body.entered .window{
+    opacity:1;
+    transform: translateY(0);
+    pointer-events:auto;
+  }
+  body.minimized .window,
+  body.closed .window{
+    opacity:0;
+    pointer-events:none;
+    transform: translateY(16px);
+  }
 
-h1{margin:0;font-size:26px;font-weight:900}
-.handle{margin-top:6px;font-size:14px;color:var(--muted)}
-.tagline{margin-top:10px;font-size:14px;color:var(--muted)}
+  /* ===== Titlebar ===== */
+  .titlebar{
+    height:42px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 10px 0 12px;
+    background:rgba(255,255,255,.05);
+    border-bottom:1px solid rgba(255,255,255,.085);
+    user-select:none;
+    gap:10px;
+    cursor:grab;
+  }
+  .titlebar:active{cursor:grabbing}
 
-/* ===== Footer ===== */
-.footer{
-  padding:10px 15px;
-  font-size:11px;
-  border-top:1px solid rgba(255,255,255,.08);
-  display:flex;justify-content:space-between;
-  color:var(--muted);
-  background:rgba(255,255,255,.03);
-}
-.mono{font-family:monospace}
+  .title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    font-weight:750;
+    color:rgba(242,246,255,.93);
+    white-space:nowrap;
+  }
+  .appIcon{
+    width:14px;height:14px;border-radius:4px;
+    background:linear-gradient(135deg,var(--blue),var(--purple));
+    flex:0 0 auto;
+  }
+
+  .winbtns{display:flex; flex:0 0 auto;}
+  .winbtn{
+    width:46px;
+    height:42px;
+    display:grid;
+    place-items:center;
+    border-left:1px solid rgba(255,255,255,.06);
+    color:rgba(242,246,255,.86);
+    cursor:pointer;
+    user-select:none;
+  }
+  .winbtn svg{width:16px;height:16px;opacity:.95}
+  .winbtn:hover{background:rgba(255,255,255,.08)}
+  .winbtn.close:hover{background:rgba(239,68,68,.26)}
+  .winbtn:active{transform: translateY(0.5px);}
+
+  /* ===== Content redesign ===== */
+  .content{
+    padding:18px 18px 16px;
+  }
+
+  .topRow{
+    display:flex;
+    gap:14px;
+    align-items:center;
+    padding:8px 6px 10px;
+  }
+
+  .avatarWrap{
+    width:84px; height:84px;
+    position:relative;
+    flex:0 0 auto;
+  }
+  .avatar{
+    width:84px; height:84px;
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.03);
+  }
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+
+  .statusDotCorner{
+    position:absolute;
+    right:-2px;
+    bottom:-2px;
+    width:18px;
+    height:18px;
+    border-radius:999px;
+    background:#0b0d13;
+    border:1px solid rgba(255,255,255,.10);
+    display:grid;
+    place-items:center;
+    box-shadow: 0 10px 26px rgba(0,0,0,.55);
+  }
+  .statusDotCorner span{
+    width:10px;height:10px;border-radius:999px;background:var(--gray);
+  }
+  .online{background:var(--green)!important}
+  .idle{background:var(--amber)!important}
+  .dnd{background:var(--red)!important}
+  .offline{background:var(--gray)!important}
+
+  .who{
+    min-width:0;
+    flex:1;
+  }
+  .nameLine{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+  }
+  .name{
+    font-size:22px;
+    font-weight:950;
+    letter-spacing:.2px;
+    margin:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .handle{
+    margin-top:4px;
+    font-size:13px;
+    color:var(--muted);
+    font-weight:800;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .badge{
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.04);
+    font-size:12px;
+    font-weight:900;
+    color:rgba(242,246,255,.92);
+  }
+  .badgeDot{width:8px;height:8px;border-radius:999px;background:var(--gray)}
+  .badgeText{opacity:.98}
+
+  .subGrid{
+    display:grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap:12px;
+    margin-top:10px;
+  }
+  @media (max-width: 740px){
+    .subGrid{grid-template-columns:1fr}
+  }
+
+  .card{
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.035);
+    border-radius:14px;
+    padding:12px;
+    overflow:hidden;
+  }
+  .cardTitle{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .cardTitle h3{
+    margin:0;
+    font-size:12px;
+    letter-spacing:.22px;
+    text-transform:uppercase;
+    color:rgba(168,179,199,.95);
+    font-weight:950;
+  }
+  .smallMuted{
+    font-size:11.5px;
+    color:rgba(168,179,199,.85);
+    font-weight:800;
+    white-space:nowrap;
+  }
+
+  .bigLine{
+    font-size:14px;
+    font-weight:900;
+    color:rgba(242,246,255,.92);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .midLine{
+    margin-top:6px;
+    font-size:13px;
+    color:rgba(168,179,199,.95);
+    font-weight:750;
+    line-height:1.35;
+    overflow:hidden;
+    display:-webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .pills{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+  .pill{
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.04);
+    font-size:12.5px;
+    color:rgba(168,179,199,.96);
+    display:flex; gap:8px; align-items:center;
+    font-weight:850;
+  }
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+
+  /* Icon links */
+  .iconLinks{
+    display:flex;
+    justify-content:flex-start;
+    gap:10px;
+    margin-top:12px;
+    padding:0 2px;
+  }
+  .iBtn{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    display:grid;
+    place-items:center;
+    cursor:pointer;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    text-decoration:none;
+    color: rgba(242,246,255,.92);
+  }
+  .iBtn:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.07);
+    border-color: rgba(255,255,255,.20);
+  }
+  .iBtn svg{ width:22px; height:22px; opacity:.92; }
+
+  .footer{
+    padding:10px 15px;
+    font-size:11px;
+    border-top:1px solid rgba(255,255,255,.08);
+    display:flex; justify-content:space-between;
+    color:var(--muted);
+    background:rgba(255,255,255,.03);
+  }
+
+  audio{display:none}
+
+  /* click-to-enter */
+  .gate{
+    position:fixed; inset:0;
+    display:grid; place-items:center;
+    z-index:100;
+    cursor:pointer;
+    transition: opacity .35s ease;
+    background: rgba(0,0,0,.18);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  body.entered .gate{opacity:0; pointer-events:none;}
+  .gateText{
+    font-size:26px; font-weight:850;
+    color: rgba(242,246,255,.95);
+    text-shadow: 0 10px 30px rgba(0,0,0,.55);
+    letter-spacing:.2px;
+  }
+  .gateText .dots{ opacity:.9; animation:dots 1.2s infinite; }
+  @keyframes dots{ 0%,20%{opacity:.3} 50%{opacity:1} 100%{opacity:.3} }
+
+  /* ===== Taskbar ===== */
+  .taskbar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    height:var(--taskbarH);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 10px;
+    z-index:90;
+
+    border-top:1px solid rgba(255,255,255,.10);
+    background: rgba(10,12,18,.55);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 -20px 70px rgba(0,0,0,.55);
+
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .35s ease;
+  }
+  body.entered .taskbar{opacity:1; pointer-events:auto;}
+
+  .tbLeft,.tbRight{display:flex; align-items:center; gap:8px;}
+  .tbCenter{flex:1; display:flex; justify-content:center; align-items:center; gap:8px;}
+
+  .tbBtn{
+    width:38px;height:38px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    display:grid;
+    place-items:center;
+    cursor:pointer;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  .tbBtn:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.07);
+    border-color: rgba(255,255,255,.18);
+  }
+
+  .startMark{
+    width:16px;height:16px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:2px;
+  }
+  .startMark span{
+    background: rgba(242,246,255,.92);
+    border-radius:2px;
+    opacity:.92;
+  }
+
+  .appBtn{
+    min-width:170px;
+    height:38px;
+    padding:0 12px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    cursor:pointer;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  .appBtn:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.07);
+    border-color: rgba(255,255,255,.18);
+  }
+  .appDot{
+    width:14px;height:14px;border-radius:4px;
+    background: linear-gradient(135deg,var(--blue),var(--purple));
+  }
+  .appName{ font-size:12.5px; font-weight:950; color: rgba(242,246,255,.92); white-space:nowrap; }
+  .appIndicator{
+    margin-left:auto;
+    width:26px; height:4px;
+    border-radius:999px;
+    background: rgba(255,255,255,.14);
+    position:relative;
+    overflow:hidden;
+  }
+  .appIndicator::after{
+    content:"";
+    position:absolute; inset:0;
+    background: rgba(74,163,255,.65);
+    opacity:.95;
+  }
+  body.minimized .appIndicator::after,
+  body.closed .appIndicator::after{opacity:.30}
+
+  .tray{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 10px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+  }
+
+  .volBtn{
+    width:28px; height:28px;
+    border-radius:10px;
+    display:grid;
+    place-items:center;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    cursor:pointer;
+  }
+  .volBtn:hover{ background: rgba(255,255,255,.07); }
+  .volBtn svg{ width:16px; height:16px; opacity:.92; }
+
+  .volRange{ width:160px; height:18px; display:flex; align-items:center; }
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:4px;
+    border-radius:999px;
+    background: rgba(255,255,255,.22);
+    outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:14px;height:14px;border-radius:999px;
+    background: rgba(255,255,255,.92);
+    border:1px solid rgba(0,0,0,.35);
+    box-shadow: 0 8px 20px rgba(0,0,0,.45);
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:999px;
+    background: rgba(255,255,255,.92);
+    border:1px solid rgba(0,0,0,.35);
+  }
+  input[type="range"]::-moz-range-track{
+    height:4px;border-radius:999px;
+    background: rgba(255,255,255,.22);
+  }
+
+  .clockBox{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    line-height:1.1;
+    padding:0 2px;
+    min-width:64px;
+  }
+  .clockTime{ font-size:12.5px; font-weight:950; color: rgba(242,246,255,.92); }
+  .clockDate{ margin-top:2px; font-size:11px; color: rgba(168,179,199,.92); font-weight:750; }
+
+  @media (max-width: 820px){
+    .volRange{width:120px}
+    .appBtn{min-width:150px}
+  }
+  @media (max-width: 560px){
+    .volRange{width:90px}
+    .appBtn{min-width:120px}
+    .clockBox{min-width:58px}
+  }
 </style>
 </head>
 
 <body>
+  <div class="bg" aria-hidden="true">
+    <iframe
+      src="https://www.youtube.com/embed/Ulm_Z646eBg?autoplay=1&mute=1&controls=0&rel=0&playsinline=1&loop=1&playlist=Ulm_Z646eBg&modestbranding=1&iv_load_policy=3&disablekb=1"
+      title="background"
+      frameborder="0"
+      allow="autoplay; encrypted-media"
+      referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+  <div class="bgOverlay" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
 
-<section class="window">
-  <div class="titlebar">
-    <div class="title">
-      <div class="icon"></div> discord.exe
-    </div>
-    <div class="winbtns">
-      <div class="winbtn" id="btnMin">—</div>
-      <div class="winbtn close" id="btnClose">✕</div>
-    </div>
+  <div class="gate" id="gate">
+    <div class="gateText">click to enter<span class="dots">...</span></div>
   </div>
 
-  <div class="content">
-    <div class="pfpWrap">
-      <div class="pfp">
-        <img id="pfp" src="https://cdn.discordapp.com/embed/avatars/0.png">
+  <div class="stage">
+    <div class="dragWrap" id="dragWrap">
+      <div class="tilt" id="tilt">
+        <section class="window" id="window">
+          <div class="titlebar" id="titlebar">
+            <div class="title"><div class="appIcon"></div> discord.exe</div>
+
+            <div class="winbtns">
+              <div class="winbtn" id="btnMin" title="Minimize" aria-label="Minimize">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="winbtn close" id="btnClose" title="Close" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="topRow">
+              <div class="avatarWrap">
+                <div class="avatar"><img id="pfp" alt="pfp" src="https://cdn.discordapp.com/embed/avatars/0.png"></div>
+                <div class="statusDotCorner" title="status"><span id="pfpDot" class="offline"></span></div>
+              </div>
+
+              <div class="who">
+                <div class="nameLine">
+                  <h1 class="name" id="name">loading…</h1>
+                  <div class="badge" title="Discord status">
+                    <span class="badgeDot offline" id="statusDot"></span>
+                    <span class="badgeText" id="statusText">offline</span>
+                  </div>
+                </div>
+                <div class="handle" id="handle">@discord</div>
+
+                <div class="pills">
+                  <div class="pill" title="Views">views <span class="mono" id="views">…</span></div>
+                </div>
+
+                <div class="iconLinks">
+                  <a class="iBtn" href="https://www.tiktok.com" target="_blank" rel="noreferrer" title="TikTok">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M14 4v10.2a3.8 3.8 0 1 1-3-3.7V8.2a6 6 0 1 0 6 6V9.3c1 .8 2.2 1.3 3.5 1.4V8.1c-1.7-.2-3.1-1.4-3.8-3.1H14Z"
+                            stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                    </svg>
+                  </a>
+
+                  <a class="iBtn" href="https://discord.com" target="_blank" rel="noreferrer" title="Discord">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M8.6 7.4c1-.5 2.2-.8 3.4-.8s2.4.3 3.4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                      <path d="M7 8.8c-1 1.7-1.6 3.7-1.6 5.8 1.6 1.2 3.7 1.9 6.6 1.9s5-.7 6.6-1.9c0-2.1-.6-4.1-1.6-5.8-1.2-.7-2.5-1.2-4-1.4l-.6 1" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                      <path d="M10 13.2h.01M14 13.2h.01" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+                    </svg>
+                  </a>
+
+                  <a class="iBtn" href="https://www.youtube.com" target="_blank" rel="noreferrer" title="YouTube">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M20 8.4a3 3 0 0 0-2.1-2.2C16.2 5.7 12 5.7 12 5.7s-4.2 0-5.9.5A3 3 0 0 0 4 8.4 31 31 0 0 0 3.7 12c0 1.2.1 2.4.3 3.6A3 3 0 0 0 6.1 18c1.7.5 5.9.5 5.9.5s4.2 0 5.9-.5A3 3 0 0 0 20 15.6c.2-1.2.3-2.4.3-3.6 0-1.2-.1-2.4-.3-3.6Z"
+                            stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                      <path d="M11 10.2 14.8 12 11 13.8v-3.6Z" fill="currentColor"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="subGrid">
+              <div class="card">
+                <div class="cardTitle">
+                  <h3>What they wrote</h3>
+                  <div class="smallMuted mono">updated <span id="updated">--:--</span></div>
+                </div>
+                <div class="bigLine" id="customStatus">—</div>
+                <div class="midLine" id="customStatus2">—</div>
+              </div>
+
+              <div class="card">
+                <div class="cardTitle">
+                  <h3>Playing / Activity</h3>
+                  <div class="smallMuted mono" id="activityType">—</div>
+                </div>
+                <div class="bigLine" id="activityName">—</div>
+                <div class="midLine" id="activityDetails">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <span>© <span id="year"></span></span>
+            <span class="mono">vercel • lanyard • countapi</span>
+          </div>
+        </section>
       </div>
-      <div class="pfpStatus">
-        <div class="dot offline" id="pfpDot"></div>
+    </div>
+  </div>
+
+  <!-- TASKBAR -->
+  <div class="taskbar" id="taskbar">
+    <div class="tbLeft">
+      <div class="tbBtn" title="Start">
+        <div class="startMark" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
       </div>
     </div>
 
-    <h1 id="name">Loading...</h1>
-    <div class="handle" id="handle">@discord</div>
-    <div class="tagline">windows look • guns.lol hover • clean</div>
+    <div class="tbCenter">
+      <div class="appBtn" id="appToggle" title="discord.exe">
+        <div class="appDot"></div>
+        <div class="appName">discord.exe</div>
+        <div class="appIndicator" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="tbRight">
+      <div class="tray">
+        <div class="volBtn" id="muteBtn" title="Volume">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M11 5 7.5 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h3.5L11 19V5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path id="wave1" d="M14.5 9.2c.6.7.9 1.7.9 2.8s-.3 2.1-.9 2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path id="wave2" d="M16.8 7.2c1.1 1.2 1.7 2.9 1.7 4.8s-.6 3.6-1.7 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>
+          </svg>
+        </div>
+
+        <div class="volRange">
+          <input id="vol" type="range" min="0" max="100" value="5" />
+        </div>
+
+        <div class="clockBox">
+          <div class="clockTime mono" id="clock">--:--</div>
+          <div class="clockDate mono" id="date">--.--</div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="footer">
-    <span>© <span id="year"></span></span>
-    <span class="mono">lanyard</span>
-  </div>
-</section>
+  <!-- MP3 -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="/space-song-lyrics.mp3" type="audio/mpeg">
+  </audio>
 
 <script>
-const USER_ID="1377987625129869373";
-const $=id=>document.getElementById(id);
+  const USER_ID = "1377987625129869373";
+  const COUNT_NAMESPACE = "my-bio-khaki";
+  const COUNT_KEY = "views";
+  const $ = (id) => document.getElementById(id);
 
-function setDot(status){
-  $("pfpDot").className="dot "+(status||"offline");
-}
+  // hover tilt
+  const tilt = $("tilt");
+  const maxTilt = 7;
 
-async function loadDiscord(){
-  try{
-    const r=await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`);
-    const j=await r.json();
-    const d=j?.data;
-    if(!d)return;
-
-    const u=d.discord_user||{};
-    $("name").textContent=u.global_name||u.username||"user";
-    $("handle").textContent=u.username?`@${u.username}`:"@discord";
-
-    if(u.id&&u.avatar){
-      const ext=u.avatar.startsWith("a_")?"gif":"png";
-      $("pfp").src=`https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${ext}?size=256`;
-    }
-
-    setDot(d.discord_status);
-  }catch{
-    setDot("offline");
+  function setSpotlightVars(clientX, clientY){
+    const r = tilt.getBoundingClientRect();
+    const mx = ((clientX - r.left) / r.width) * 100;
+    const my = ((clientY - r.top) / r.height) * 100;
+    tilt.style.setProperty("--mx", mx + "%");
+    tilt.style.setProperty("--my", my + "%");
   }
-}
 
-$("year").textContent=new Date().getFullYear();
-loadDiscord();
-setInterval(loadDiscord,15000);
+  tilt.addEventListener("mousemove", (e) => {
+    const r = tilt.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;
+    const py = (e.clientY - r.top) / r.height;
+
+    const ry = (px - 0.5) * (maxTilt * 2);
+    const rx = (0.5 - py) * (maxTilt * 2);
+
+    tilt.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-2px)`;
+    setSpotlightVars(e.clientX, e.clientY);
+  });
+
+  tilt.addEventListener("mouseleave", () => {
+    tilt.style.transform = `perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+    tilt.style.setProperty("--mx", "50%");
+    tilt.style.setProperty("--my", "50%");
+  });
+
+  // clock + date
+  function setClock(){
+    const d = new Date();
+    $("clock").textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+    $("date").textContent = String(d.getDate()).padStart(2,"0") + "." + String(d.getMonth()+1).padStart(2,"0");
+  }
+  function setUpdated(){
+    const d = new Date();
+    $("updated").textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  }
+
+  // views
+  async function loadViews(){
+    try{
+      const r = await fetch(`https://api.countapi.xyz/hit/${encodeURIComponent(COUNT_NAMESPACE)}/${encodeURIComponent(COUNT_KEY)}`, { cache:"no-store" });
+      const j = await r.json();
+      $("views").textContent = (j.value ?? 0).toLocaleString();
+    }catch{
+      const k = "local_views_v1";
+      const n = (Number(localStorage.getItem(k)||0) + 1);
+      localStorage.setItem(k, String(n));
+      $("views").textContent = n.toLocaleString();
+    }
+  }
+
+  // status helpers
+  function statusLabel(s){
+    switch(s){
+      case "online": return "online";
+      case "idle": return "idle";
+      case "dnd": return "dnd";
+      default: return "offline";
+    }
+  }
+  function applyStatus(s){
+    const st = s || "offline";
+    $("pfpDot").className = st;
+    $("statusDot").className = "badgeDot " + st;
+    $("statusText").textContent = statusLabel(st);
+  }
+
+  // Pick activity (exclude Custom Status and Spotify)
+  function pickMainActivity(activities){
+    if(!Array.isArray(activities)) return null;
+    // Prefer "Playing" (type 0) that isn't Custom Status / Spotify
+    const filtered = activities.filter(a => a && a.name && a.type !== 4 && a.name !== "Spotify");
+    const playing = filtered.find(a => a.type === 0) || filtered[0];
+    return playing || null;
+  }
+
+  function formatActivity(a){
+    if(!a) return {
+      type:"—", name:"—", details:"—"
+    };
+
+    const typeMap = {0:"Playing",1:"Streaming",2:"Listening",3:"Watching",5:"Competing"};
+    const t = typeMap[a.type] || "Activity";
+
+    const name = a.name || "—";
+    const bits = [];
+    if(a.details) bits.push(a.details);
+    if(a.state) bits.push(a.state);
+
+    const details = bits.length ? bits.join(" • ") : "—";
+    return { type:t, name, details };
+  }
+
+  function formatCustomStatus(activities){
+    const cs = Array.isArray(activities) ? activities.find(a => a && a.type === 4) : null;
+    const emoji = cs?.emoji?.name ? cs.emoji.name + " " : "";
+    const text = cs?.state ? (emoji + cs.state) : (emoji ? emoji.trim() : "—");
+    return text || "—";
+  }
+
+  async function loadDiscord(){
+    try{
+      const r = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`, { cache:"no-store" });
+      const j = await r.json();
+      const d = j?.data;
+
+      if(!d){
+        $("name").textContent = "unknown";
+        $("handle").textContent = "@discord";
+        applyStatus("offline");
+        $("customStatus").textContent = "—";
+        $("customStatus2").textContent = "—";
+        $("activityType").textContent = "—";
+        $("activityName").textContent = "—";
+        $("activityDetails").textContent = "—";
+        return;
+      }
+
+      const u = d.discord_user || {};
+      $("name").textContent = u.global_name || u.username || "user";
+      $("handle").textContent = u.username ? `@${u.username}` : "@discord";
+
+      if(u.id && u.avatar){
+        const ext = u.avatar.startsWith("a_") ? "gif" : "png";
+        $("pfp").src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${ext}?size=256`;
+      }else{
+        $("pfp").src = "https://cdn.discordapp.com/embed/avatars/0.png";
+      }
+
+      applyStatus(d.discord_status || "offline");
+
+      // "what he wrote there" = Custom Status
+      const custom = formatCustomStatus(d.activities);
+      $("customStatus").textContent = custom;
+      $("customStatus2").textContent = custom === "—" ? "no custom status" : "custom status";
+
+      // "what he plays etc" = main activity
+      const mainA = pickMainActivity(d.activities);
+      const f = formatActivity(mainA);
+      $("activityType").textContent = f.type;
+      $("activityName").textContent = f.name;
+      $("activityDetails").textContent = f.details;
+
+      setUpdated();
+    }catch{
+      applyStatus("offline");
+    }
+  }
+
+  // audio + taskbar volume (default 5%)
+  const audio = $("bgMusic");
+  const vol = $("vol");
+  const muteBtn = $("muteBtn");
+  const wave1 = document.getElementById("wave1");
+  const wave2 = document.getElementById("wave2");
+
+  let lastVolume = 0.05;
+
+  function applyVolume(v01){
+    audio.volume = Math.max(0, Math.min(1, v01));
+    const pct = Math.round(audio.volume * 100);
+    vol.value = String(pct);
+
+    const muted = audio.muted || pct === 0;
+    wave1.style.opacity = muted ? "0" : "1";
+    wave2.style.opacity = muted ? "0" : ".9";
+  }
+
+  vol.addEventListener("input", () => {
+    const v = Number(vol.value) / 100;
+    audio.muted = false;
+    lastVolume = v || lastVolume;
+    applyVolume(v);
+  });
+
+  muteBtn.addEventListener("click", () => {
+    if(audio.muted || audio.volume === 0){
+      audio.muted = false;
+      applyVolume(lastVolume || 0.05);
+    }else{
+      lastVolume = audio.volume || lastVolume;
+      audio.muted = true;
+      applyVolume(audio.volume);
+    }
+  });
+
+  applyVolume(0.05);
+
+  // enter gate
+  async function enter(){
+    if(document.body.classList.contains("entered")) return;
+    document.body.classList.add("entered");
+
+    try{ await audio.play(); }catch(e){}
+
+    loadViews();
+    loadDiscord();
+  }
+  $("gate").addEventListener("click", enter);
+
+  // minimize / close (taskbar restores)
+  function minimize(){
+    document.body.classList.add("minimized");
+    document.body.classList.remove("closed");
+  }
+  function closeWindow(){
+    document.body.classList.add("closed");
+    document.body.classList.remove("minimized");
+  }
+  function restore(){
+    document.body.classList.remove("minimized");
+    document.body.classList.remove("closed");
+  }
+  function toggleFromTaskbar(){
+    if(!document.body.classList.contains("entered")) return;
+    const hidden = document.body.classList.contains("minimized") || document.body.classList.contains("closed");
+    if(hidden) restore();
+    else minimize();
+  }
+
+  // IMPORTANT: stop drag capture from killing clicks on buttons
+  function stopDragSteal(el){
+    ["pointerdown","mousedown","touchstart"].forEach(ev=>{
+      el.addEventListener(ev, (e)=>{ e.stopPropagation(); }, {passive:true});
+    });
+  }
+
+  stopDragSteal($("btnMin"));
+  stopDragSteal($("btnClose"));
+
+  $("btnMin").addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); minimize(); });
+  $("btnClose").addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); closeWindow(); });
+  $("appToggle").addEventListener("click", toggleFromTaskbar);
+
+  // draggable window
+  const dragWrap = $("dragWrap");
+  const titlebar = $("titlebar");
+
+  let dragging=false, startX=0, startY=0, baseLeft=0, baseTop=0;
+  function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+  titlebar.addEventListener("pointerdown", (e) => {
+    // if click started on buttons, ignore
+    if(e.target.closest && e.target.closest(".winbtn")) return;
+    if(document.body.classList.contains("minimized") || document.body.classList.contains("closed")) return;
+
+    dragging = true;
+    titlebar.setPointerCapture(e.pointerId);
+
+    const rect = dragWrap.getBoundingClientRect();
+    startX = e.clientX; startY = e.clientY;
+
+    dragWrap.style.left = rect.left + "px";
+    dragWrap.style.top  = rect.top + "px";
+    dragWrap.style.transform = "none";
+
+    baseLeft = rect.left; baseTop = rect.top;
+  });
+
+  titlebar.addEventListener("pointermove", (e) => {
+    if(!dragging) return;
+
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    const winW = window.innerWidth;
+    const winH = window.innerHeight - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--taskbarH"));
+
+    const rect = dragWrap.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+
+    let nextLeft = baseLeft + dx;
+    let nextTop  = baseTop + dy;
+
+    const margin = 10;
+    nextLeft = clamp(nextLeft, margin, winW - w - margin);
+    nextTop  = clamp(nextTop, margin, winH - h - margin);
+
+    dragWrap.style.left = nextLeft + "px";
+    dragWrap.style.top  = nextTop + "px";
+  });
+
+  titlebar.addEventListener("pointerup", () => dragging=false);
+  titlebar.addEventListener("pointercancel", () => dragging=false);
+
+  // init
+  $("year").textContent = new Date().getFullYear();
+  setClock();
+  setInterval(setClock, 10000);
+
+  setInterval(() => {
+    if(document.body.classList.contains("entered")) loadDiscord();
+  }, 15000);
 </script>
-
 </body>
 </html>
