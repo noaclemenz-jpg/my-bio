@@ -342,6 +342,7 @@
     cursor:pointer;
     transition: transform .12s ease, background .12s ease, border-color .12s ease;
     text-decoration:none;
+    color: rgba(242,246,255,.92);
   }
   .iBtn:hover{
     transform: translateY(-1px);
@@ -349,6 +350,13 @@
     border-color: rgba(255,255,255,.20);
   }
   .iBtn svg{ width:22px; height:22px; }
+
+  /* make icon svgs use theme color */
+  .iBtn svg,
+  .iBtn svg *{
+    fill: currentColor !important;
+    stroke: currentColor !important;
+  }
 
   .footer{
     padding:10px 15px;
@@ -495,9 +503,17 @@
     border:1px solid rgba(255,255,255,.10);
     background: rgba(255,255,255,.04);
     cursor:pointer;
+    color: rgba(242,246,255,.92);
   }
   .volBtn:hover{ background: rgba(255,255,255,.07); }
   .volBtn svg{ width:16px; height:16px; opacity:.92; }
+
+  /* make volume svg use theme color */
+  .volBtn svg,
+  .volBtn svg *{
+    fill: currentColor !important;
+    stroke: currentColor !important;
+  }
 
   .volRange{ width:160px; height:18px; display:flex; align-items:center; }
   input[type="range"]{
