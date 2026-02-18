@@ -6,1004 +6,252 @@
 <title>discord.exe</title>
 
 <style>
-  :root{
-    --text:#f2f6ff;
-    --muted:#a8b3c7;
+:root{
+  --text:#f2f6ff;
+  --muted:#a8b3c7;
 
-    --blue:#4aa3ff;
-    --purple:#a78bfa;
+  --blue:#4aa3ff;
+  --purple:#a78bfa;
 
-    --green:#22c55e;
-    --amber:#f59e0b;
-    --red:#ef4444;
-    --gray:#64748b;
+  --green:#22c55e;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --gray:#64748b;
 
-    --radius:12px;
-    --shadow: 0 28px 110px rgba(0,0,0,.78);
+  --radius:12px;
+  --shadow: 0 28px 110px rgba(0,0,0,.78);
 
-    --taskbarH: 54px;
-  }
+  --taskbarH: 54px;
+}
 
-  *{box-sizing:border-box}
-  html,body{height:100%}
+*{box-sizing:border-box}
+html,body{height:100%}
 
-  /* ===== Lock interactions (no select / no copy highlighting) ===== */
-  html, body{
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
-  }
-  *{
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  input, textarea{
-    -webkit-user-select: auto;
-    user-select: auto;
-  }
+/* Lock select */
+html, body{
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+*{
+  -webkit-user-select: none;
+  user-select: none;
+}
+input, textarea{
+  -webkit-user-select: auto;
+  user-select: auto;
+}
 
-  body{
-    margin:0;
-    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
-    color:var(--text);
-    background:#05060a;
-    overflow:hidden;
-  }
+body{
+  margin:0;
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:#05060a;
+  overflow:hidden;
+}
 
-  /* ===== Background ===== */
-  .bg{ position:fixed; inset:0; z-index:-3; overflow:hidden; }
-  .bg iframe{
-    position:absolute; top:50%; left:50%;
-    width:160vw; height:90vw;
-    min-width:160vh; min-height:90vh;
-    transform:translate(-50%,-50%);
-    filter: blur(6px);
-    opacity:.48;
-    pointer-events:none;
-  }
-  .bgOverlay{
-    position:fixed; inset:0; z-index:-2;
-    background:
-      radial-gradient(900px 520px at 15% 18%, rgba(74,163,255,.11), transparent 60%),
-      radial-gradient(820px 640px at 86% 25%, rgba(167,139,250,.11), transparent 60%),
-      linear-gradient(180deg, rgba(10,12,18,.55), rgba(5,6,10,.78));
-  }
-  .noise{
-    pointer-events:none;
-    position:fixed; inset:0; z-index:-1;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
-    opacity:.05;
-    mix-blend-mode: overlay;
-  }
+/* ===== Background ===== */
+.bg{ position:fixed; inset:0; z-index:-3; overflow:hidden; }
+.bg iframe{
+  position:absolute; top:50%; left:50%;
+  width:160vw; height:90vw;
+  min-width:160vh; min-height:90vh;
+  transform:translate(-50%,-50%);
+  filter: blur(6px);
+  opacity:.48;
+  pointer-events:none;
+}
+.bgOverlay{
+  position:fixed; inset:0; z-index:-2;
+  background:
+    radial-gradient(900px 520px at 15% 18%, rgba(74,163,255,.11), transparent 60%),
+    radial-gradient(820px 640px at 86% 25%, rgba(167,139,250,.11), transparent 60%),
+    linear-gradient(180deg, rgba(10,12,18,.55), rgba(5,6,10,.78));
+}
+.noise{
+  pointer-events:none;
+  position:fixed; inset:0; z-index:-1;
+  opacity:.05;
+  mix-blend-mode: overlay;
+}
 
-  .stage{ position:fixed; inset:0; padding-bottom:var(--taskbarH); }
+.stage{ position:fixed; inset:0; padding-bottom:var(--taskbarH); }
 
-  /* draggable container */
-  .dragWrap{
-    position:absolute;
-    left:50%; top:50%;
-    transform: translate(-50%,-50%);
-    width:min(880px, calc(100% - 28px));
-    touch-action:none;
-  }
+.dragWrap{
+  position:absolute;
+  left:50%; top:50%;
+  transform: translate(-50%,-50%);
+  width:min(880px, calc(100% - 28px));
+}
 
-  /* wrapper kept, but NO glow/tilt */
-  .tilt{ width:100%; }
+.window{
+  border-radius:var(--radius);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.13);
+  background: linear-gradient(180deg, rgba(18,20,28,.72), rgba(18,20,28,.42));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
 
-  /* ===== Window ===== */
-  .window{
-    border-radius:var(--radius);
-    overflow:hidden;
-    border:1px solid rgba(255,255,255,.13);
-    background: linear-gradient(180deg, rgba(18,20,28,.72), rgba(18,20,28,.42));
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: var(--shadow);
+  transform: translateY(10px);
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .28s ease, transform .28s ease;
+}
+body.entered .window{
+  opacity:1;
+  transform: translateY(0);
+  pointer-events:auto;
+}
+body.minimized .window,
+body.closed .window{
+  opacity:0;
+  pointer-events:none;
+  transform: translateY(16px);
+}
 
-    transform: translateY(10px);
-    opacity:0;
-    pointer-events:none;
-    transition: opacity .28s ease, transform .28s ease;
-  }
-  body.entered .window{
-    opacity:1;
-    transform: translateY(0);
-    pointer-events:auto;
-  }
-  body.minimized .window,
-  body.closed .window{
-    opacity:0;
-    pointer-events:none;
-    transform: translateY(16px);
-  }
+/* ===== Titlebar ===== */
+.titlebar{
+  height:42px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 10px 0 12px;
+  background:rgba(255,255,255,.05);
+  border-bottom:1px solid rgba(255,255,255,.085);
+  gap:10px;
+  cursor:grab;
+}
+.titlebar:active{cursor:grabbing}
 
-  /* ===== Titlebar ===== */
-  .titlebar{
-    height:42px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:0 10px 0 12px;
-    background:rgba(255,255,255,.05);
-    border-bottom:1px solid rgba(255,255,255,.085);
-    user-select:none;
-    gap:10px;
-    cursor:grab;
-  }
-  .titlebar:active{cursor:grabbing}
+.title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  font-weight:750;
+}
 
-  .title{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:13px;
-    font-weight:750;
-    color:rgba(242,246,255,.93);
-    white-space:nowrap;
-  }
-  .appIcon{
-    width:14px;height:14px;border-radius:4px;
-    background:linear-gradient(135deg,var(--blue),var(--purple));
-    flex:0 0 auto;
-  }
+.appIcon{
+  width:14px;height:14px;border-radius:4px;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+}
 
-  .winbtns{display:flex; flex:0 0 auto;}
-  .winbtn{
-    width:46px;
-    height:42px;
-    display:grid;
-    place-items:center;
-    border-left:1px solid rgba(255,255,255,.06);
-    color:rgba(242,246,255,.86);
-    cursor:pointer;
-    user-select:none;
-  }
-  .winbtn svg{width:16px;height:16px;opacity:.95}
-  .winbtn:hover{background:rgba(255,255,255,.08)}
-  .winbtn.close:hover{background:rgba(239,68,68,.26)}
-  .winbtn:active{transform: translateY(0.5px);}
+.winbtns{display:flex;}
+.winbtn{
+  width:46px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-left:1px solid rgba(255,255,255,.06);
+  cursor:pointer;
+}
+.winbtn:hover{background:rgba(255,255,255,.08)}
+.winbtn.close:hover{background:rgba(239,68,68,.26)}
 
-  /* ===== Clean content redesign ===== */
-  .content{ padding:18px 18px 16px; }
+.content{ padding:18px 18px 16px; }
 
-  .topRow{
-    display:flex;
-    gap:14px;
-    align-items:center;
-    padding:8px 6px 10px;
-  }
+.subGrid{
+  display:grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap:12px;
+  margin-top:10px;
+}
+@media (max-width: 740px){
+  .subGrid{grid-template-columns:1fr}
+}
 
-  .avatarWrap{ width:84px; height:84px; position:relative; flex:0 0 auto; }
-  .avatar{
-    width:84px; height:84px;
-    border-radius:16px;
-    overflow:hidden;
-    border:1px solid rgba(255,255,255,.15);
-    background:rgba(255,255,255,.03);
-  }
-  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.card{
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.035);
+  border-radius:14px;
+  padding:12px;
+}
 
-  .statusDotCorner{
-    position:absolute;
-    right:-2px; bottom:-2px;
-    width:18px; height:18px;
-    border-radius:999px;
-    background:#0b0d13;
-    border:1px solid rgba(255,255,255,.10);
-    display:grid;
-    place-items:center;
-    box-shadow: 0 10px 26px rgba(0,0,0,.55);
-  }
-  .statusDotCorner span{
-    width:10px;height:10px;border-radius:999px;background:var(--gray);
-  }
-  .online{background:var(--green)!important}
-  .idle{background:var(--amber)!important}
-  .dnd{background:var(--red)!important}
-  .offline{background:var(--gray)!important}
+/* Hide class for activity */
+.hidden{
+  display:none !important;
+}
 
-  .who{ min-width:0; flex:1; }
-  .nameLine{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    min-width:0;
-  }
-  .name{
-    font-size:22px;
-    font-weight:950;
-    letter-spacing:.2px;
-    margin:0;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .handle{
-    margin-top:4px;
-    font-size:13px;
-    color:var(--muted);
-    font-weight:800;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
+.footer{
+  padding:10px 15px;
+  font-size:11px;
+  border-top:1px solid rgba(255,255,255,.08);
+  display:flex; justify-content:space-between;
+  background:rgba(255,255,255,.03);
+}
 
-  .badge{
-    flex:0 0 auto;
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:7px 10px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.10);
-    background:rgba(255,255,255,.04);
-    font-size:12px;
-    font-weight:900;
-    color:rgba(242,246,255,.92);
-  }
-  .badgeDot{width:8px;height:8px;border-radius:999px;background:var(--gray)}
-  .badgeText{opacity:.98}
-
-  .subGrid{
-    display:grid;
-    grid-template-columns: 1.35fr 1fr;
-    gap:12px;
-    margin-top:10px;
-  }
-  @media (max-width: 740px){
-    .subGrid{grid-template-columns:1fr}
-  }
-
-  .card{
-    border:1px solid rgba(255,255,255,.10);
-    background:rgba(255,255,255,.035);
-    border-radius:14px;
-    padding:12px;
-    overflow:hidden;
-  }
-  /* remove any hover glow/move from cards */
-  .card:hover{ background:rgba(255,255,255,.035); border-color:rgba(255,255,255,.10); }
-
-  .cardTitle{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    margin-bottom:8px;
-  }
-  .cardTitle h3{
-    margin:0;
-    font-size:12px;
-    letter-spacing:.22px;
-    text-transform:uppercase;
-    color:rgba(168,179,199,.95);
-    font-weight:950;
-  }
-  .smallMuted{
-    font-size:11.5px;
-    color:rgba(168,179,199,.85);
-    font-weight:800;
-    white-space:nowrap;
-  }
-
-  .bigLine{
-    font-size:14px;
-    font-weight:900;
-    color:rgba(242,246,255,.92);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .midLine{
-    margin-top:6px;
-    font-size:13px;
-    color:rgba(168,179,199,.95);
-    font-weight:750;
-    line-height:1.35;
-    overflow:hidden;
-    display:-webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
-
-  .pills{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:10px;
-  }
-  .pill{
-    padding:8px 12px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.10);
-    background:rgba(255,255,255,.04);
-    font-size:12.5px;
-    color:rgba(168,179,199,.96);
-    display:flex; gap:8px; align-items:center;
-    font-weight:850;
-  }
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-
-  .iconLinks{
-    display:flex;
-    justify-content:flex-start;
-    gap:10px;
-    margin-top:10px;
-    padding:0 2px;
-  }
-  .iBtn{
-    width:42px;
-    height:42px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,.12);
-    background: rgba(255,255,255,.04);
-    display:grid;
-    place-items:center;
-    cursor:pointer;
-    transition: transform .12s ease, background .12s ease, border-color .12s ease;
-    text-decoration:none;
-  }
-  .iBtn:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,.07);
-    border-color: rgba(255,255,255,.20);
-  }
-  .iBtn svg{ width:22px; height:22px; }
-
-  .footer{
-    padding:10px 15px;
-    font-size:11px;
-    border-top:1px solid rgba(255,255,255,.08);
-    display:flex; justify-content:space-between;
-    color:var(--muted);
-    background:rgba(255,255,255,.03);
-  }
-
-  audio{display:none}
-
-  /* click-to-enter */
-  .gate{
-    position:fixed; inset:0;
-    display:grid; place-items:center;
-    z-index:100;
-    cursor:pointer;
-    transition: opacity .35s ease;
-    background: rgba(0,0,0,.18);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-  }
-  body.entered .gate{opacity:0; pointer-events:none;}
-  .gateText{
-    font-size:26px; font-weight:850;
-    color: rgba(242,246,255,.95);
-    text-shadow: 0 10px 30px rgba(0,0,0,.55);
-    letter-spacing:.2px;
-  }
-  .gateText .dots{ opacity:.9; animation:dots 1.2s infinite; }
-  @keyframes dots{ 0%,20%{opacity:.3} 50%{opacity:1} 100%{opacity:.3} }
-
-  /* ===== Taskbar ===== */
-  .taskbar{
-    position:fixed;
-    left:0; right:0; bottom:0;
-    height:var(--taskbarH);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 10px;
-    z-index:90;
-
-    border-top:1px solid rgba(255,255,255,.10);
-    background: rgba(10,12,18,.55);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: 0 -20px 70px rgba(0,0,0,.55);
-
-    opacity:0;
-    pointer-events:none;
-    transition: opacity .35s ease;
-  }
-  body.entered .taskbar{opacity:1; pointer-events:auto;}
-
-  .tbLeft,.tbRight{display:flex; align-items:center; gap:8px;}
-  .tbCenter{flex:1; display:flex; justify-content:center; align-items:center; gap:8px;}
-
-  .tbBtn{
-    width:38px;height:38px;
-    border-radius:10px;
-    border:1px solid rgba(255,255,255,.10);
-    background: rgba(255,255,255,.04);
-    display:grid;
-    place-items:center;
-    cursor:pointer;
-    transition: transform .12s ease, background .12s ease, border-color .12s ease;
-  }
-  .tbBtn:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,.07);
-    border-color: rgba(255,255,255,.18);
-  }
-
-  .startMark{
-    width:16px;height:16px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    grid-template-rows:1fr 1fr;
-    gap:2px;
-  }
-  .startMark span{
-    background: rgba(242,246,255,.92);
-    border-radius:2px;
-    opacity:.92;
-  }
-
-  .appBtn{
-    min-width:170px;
-    height:38px;
-    padding:0 12px;
-    border-radius:10px;
-    border:1px solid rgba(255,255,255,.10);
-    background: rgba(255,255,255,.04);
-    display:flex;
-    align-items:center;
-    gap:10px;
-    cursor:pointer;
-    transition: transform .12s ease, background .12s ease, border-color .12s ease;
-  }
-  .appBtn:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,.07);
-    border-color: rgba(255,255,255,.18);
-  }
-  .appDot{
-    width:14px;height:14px;border-radius:4px;
-    background: linear-gradient(135deg,var(--blue),var(--purple));
-  }
-  .appName{ font-size:12.5px; font-weight:950; color: rgba(242,246,255,.92); white-space:nowrap; }
-  .appIndicator{
-    margin-left:auto;
-    width:26px; height:4px;
-    border-radius:999px;
-    background: rgba(255,255,255,.14);
-    position:relative;
-    overflow:hidden;
-  }
-  .appIndicator::after{
-    content:"";
-    position:absolute; inset:0;
-    background: rgba(74,163,255,.65);
-    opacity:.95;
-  }
-  body.minimized .appIndicator::after,
-  body.closed .appIndicator::after{opacity:.30}
-
-  .tray{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:6px 10px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,.10);
-    background: rgba(255,255,255,.03);
-  }
-
-  .volBtn{
-    width:28px; height:28px;
-    border-radius:10px;
-    display:grid;
-    place-items:center;
-    border:1px solid rgba(255,255,255,.10);
-    background: rgba(255,255,255,.04);
-    cursor:pointer;
-  }
-  .volBtn:hover{ background: rgba(255,255,255,.07); }
-  .volBtn svg{ width:16px; height:16px; opacity:.92; }
-
-  .volRange{ width:160px; height:18px; display:flex; align-items:center; }
-  input[type="range"]{
-    -webkit-appearance:none;
-    appearance:none;
-    width:100%;
-    height:4px;
-    border-radius:999px;
-    background: rgba(255,255,255,.22);
-    outline:none;
-  }
-  input[type="range"]::-webkit-slider-thumb{
-    -webkit-appearance:none;
-    appearance:none;
-    width:14px;height:14px;border-radius:999px;
-    background: rgba(255,255,255,.92);
-    border:1px solid rgba(0,0,0,.35);
-    box-shadow: 0 8px 20px rgba(0,0,0,.45);
-  }
-  input[type="range"]::-moz-range-thumb{
-    width:14px;height:14px;border-radius:999px;
-    background: rgba(255,255,255,.92);
-    border:1px solid rgba(0,0,0,.35);
-  }
-  input[type="range"]::-moz-range-track{
-    height:4px;border-radius:999px;
-    background: rgba(255,255,255,.22);
-  }
-
-  .clockBox{
-    display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    line-height:1.1;
-    padding:0 2px;
-    min-width:64px;
-  }
-  .clockTime{ font-size:12.5px; font-weight:950; color: rgba(242,246,255,.92); }
-  .clockDate{ margin-top:2px; font-size:11px; color: rgba(168,179,199,.92); font-weight:750; }
-
-  @media (max-width: 820px){
-    .volRange{width:120px}
-    .appBtn{min-width:150px}
-  }
-  @media (max-width: 560px){
-    .volRange{width:90px}
-    .appBtn{min-width:120px}
-    .clockBox{min-width:58px}
-  }
+audio{display:none}
 </style>
 </head>
 
 <body>
-  <div class="bg" aria-hidden="true">
-    <iframe
-      src="https://www.youtube.com/embed/Ulm_Z646eBg?autoplay=1&mute=1&controls=0&rel=0&playsinline=1&loop=1&playlist=Ulm_Z646eBg&modestbranding=1&iv_load_policy=3&disablekb=1"
-      title="background"
-      frameborder="0"
-      allow="autoplay; encrypted-media"
-      referrerpolicy="strict-origin-when-cross-origin"></iframe>
-  </div>
-  <div class="bgOverlay" aria-hidden="true"></div>
-  <div class="noise" aria-hidden="true"></div>
 
-  <div class="gate" id="gate">
-    <div class="gateText">click to enter<span class="dots">...</span></div>
+<div class="subGrid">
+  <div class="card">
+    <div class="cardTitle">
+      <h3>Custom status</h3>
+    </div>
+    <div id="customStatus">—</div>
   </div>
 
-  <div class="stage">
-    <div class="dragWrap" id="dragWrap">
-      <div class="tilt">
-        <section class="window" id="window">
-          <div class="titlebar" id="titlebar">
-            <div class="title"><div class="appIcon"></div> discord.exe</div>
-
-            <div class="winbtns">
-              <div class="winbtn" id="btnMin" title="Minimize" aria-label="Minimize">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="winbtn close" id="btnClose" title="Close" aria-label="Close">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div class="content">
-            <div class="topRow">
-              <div class="avatarWrap">
-                <div class="avatar"><img id="pfp" alt="pfp" src="https://cdn.discordapp.com/embed/avatars/0.png"></div>
-                <div class="statusDotCorner" title="status"><span id="pfpDot" class="offline"></span></div>
-              </div>
-
-              <div class="who">
-                <div class="nameLine">
-                  <h1 class="name" id="name">loading…</h1>
-                  <div class="badge" title="Discord status">
-                    <span class="badgeDot offline" id="statusDot"></span>
-                    <span class="badgeText" id="statusText">offline</span>
-                  </div>
-                </div>
-                <div class="handle" id="handle">@discord</div>
-
-                <div class="pills">
-                  <div class="pill" title="Views">views <span class="mono" id="views">…</span></div>
-                </div>
-
-                <div class="iconLinks">
-                  <!-- TikTok -->
-                  <a class="iBtn" href="https://www.tiktok.com" target="_blank" rel="noreferrer" title="TikTok">
-                    <svg fill="#000000" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                      <title>tiktok</title>
-                      <path d="M16.656 1.029c1.637-0.025 3.262-0.012 4.886-0.025 0.054 2.031 0.878 3.859 2.189 5.213l-0.002-0.002c1.411 1.271 3.247 2.095 5.271 2.235l0.028 0.002v5.036c-1.912-0.048-3.71-0.489-5.331-1.247l0.082 0.034c-0.784-0.377-1.447-0.764-2.077-1.196l0.052 0.034c-0.012 3.649 0.012 7.298-0.025 10.934-0.103 1.853-0.719 3.543-1.707 4.954l0.020-0.031c-1.652 2.366-4.328 3.919-7.371 4.011l-0.014 0c-0.123 0.006-0.268 0.009-0.414 0.009-1.73 0-3.347-0.482-4.725-1.319l0.040 0.023c-2.508-1.509-4.238-4.091-4.558-7.094l-0.004-0.041c-0.025-0.625-0.037-1.25-0.012-1.862 0.49-4.779 4.494-8.476 9.361-8.476 0.547 0 1.083 0.047 1.604 0.136l-0.056-0.008c0.025 1.849-0.050 3.699-0.050 5.548-0.423-0.153-0.911-0.242-1.42-0.242-1.868 0-3.457 1.194-4.045 2.861l-0.009 0.030c-0.133 0.427-0.21 0.918-0.21 1.426 0 0.206 0.013 0.41 0.037 0.61l-0.002-0.024c0.332 2.046 2.086 3.59 4.201 3.59 0.061 0 0.121-0.001 0.181-0.004l-0.009 0c1.463-0.044 2.733-0.831 3.451-1.994l0.010-0.018c0.267-0.372 0.45-0.822 0.511-1.311l0.001-0.014c0.125-2.237 0.075-4.461 0.087-6.698 0.012-5.036-0.012-10.060 0.025-15.083z"></path>
-                    </svg>
-                  </a>
-
-                  <!-- Discord -->
-                  <a class="iBtn" href="https://discord.com" target="_blank" rel="noreferrer" title="Discord">
-                    <svg viewBox="0 -28.5 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
-                      <path d="M216.856339,16.5966031 C200.285002,8.84328665 182.566144,3.2084988 164.041564,0 C161.766523,4.11318106 159.108624,9.64549908 157.276099,14.0464379 C137.583995,11.0849896 118.072967,11.0849896 98.7430163,14.0464379 C96.9108417,9.64549908 94.1925838,4.11318106 91.8971895,0 C73.3526068,3.2084988 55.6133949,8.86399117 39.0420583,16.6376612 C5.61752293,67.146514 -3.4433191,116.400813 1.08711069,164.955721 C23.2560196,181.510915 44.7403634,191.567697 65.8621325,198.148576 C71.0772151,190.971126 75.7283628,183.341335 79.7352139,175.300261 C72.104019,172.400575 64.7949724,168.822202 57.8887866,164.667963 C59.7209612,163.310589 61.5131304,161.891452 63.2445898,160.431257 C105.36741,180.133187 151.134928,180.133187 192.754523,160.431257 C194.506336,161.891452 196.298154,163.310589 198.110326,164.667963 C191.183787,168.842556 183.854737,172.420929 176.223542,175.320965 C180.230393,183.341335 184.861538,190.991831 190.096624,198.16893 C211.238746,191.588051 232.743023,181.531619 254.911949,164.955721 C260.227747,108.668201 245.831087,59.8662432 216.856339,16.5966031 Z M85.4738752,135.09489 C72.8290281,135.09489 62.4592217,123.290155 62.4592217,108.914901 C62.4592217,94.5396472 72.607595,82.7145587 85.4738752,82.7145587 C98.3405064,82.7145587 108.709962,94.5189427 108.488529,108.914901 C108.508531,123.290155 98.3405064,135.09489 85.4738752,135.09489 Z M170.525237,135.09489 C157.88039,135.09489 147.510584,123.290155 147.510584,108.914901 C147.510584,94.5396472 157.658606,82.7145587 170.525237,82.7145587 C183.391518,82.7145587 193.761324,94.5189427 193.539891,108.914901 C193.539891,123.290155 183.391518,135.09489 170.525237,135.09489 Z"
-                        fill="#5865F2" fill-rule="nonzero"></path>
-                    </svg>
-                  </a>
-
-                  <!-- YouTube -->
-                  <a class="iBtn" href="https://www.youtube.com" target="_blank" rel="noreferrer" title="YouTube">
-                    <svg viewBox="0 -3 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#000000">
-                      <title>youtube</title>
-                      <g fill="none" fill-rule="evenodd">
-                        <g transform="translate(-300.000000, -7442.000000)" fill="#FF0000">
-                          <g transform="translate(56.000000, 160.000000)">
-                            <path d="M251.988432,7291.58588 L251.988432,7285.97425 C253.980638,7286.91168 255.523602,7287.8172 257.348463,7288.79353 C255.843351,7289.62824 253.980638,7290.56468 251.988432,7291.58588 M263.090998,7283.18289 C262.747343,7282.73013 262.161634,7282.37809 261.538073,7282.26141 C259.705243,7281.91336 248.270974,7281.91237 246.439141,7282.26141 C245.939097,7282.35515 245.493839,7282.58153 245.111335,7282.93357 C243.49964,7284.42947 244.004664,7292.45151 244.393145,7293.75096 C244.556505,7294.31342 244.767679,7294.71931 245.033639,7294.98558 C245.376298,7295.33761 245.845463,7295.57995 246.384355,7295.68865 C247.893451,7296.0008 255.668037,7296.17532 261.506198,7295.73552 C262.044094,7295.64178 262.520231,7295.39147 262.895762,7295.02447 C264.385932,7293.53455 264.28433,7285.06174 263.090998,7283.18289"></path>
-                          </g>
-                        </g>
-                      </g>
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div class="subGrid">
-              <div class="card">
-                <div class="cardTitle">
-                  <h3>Custom status</h3>
-                  <div class="smallMuted mono">updated <span id="updated">--:--</span></div>
-                </div>
-                <div class="bigLine" id="customStatus">—</div>
-                <div class="midLine" id="customStatus2">—</div>
-              </div>
-
-              <div class="card">
-                <div class="cardTitle">
-                  <h3>Activity</h3>
-                  <div class="smallMuted mono" id="activityType">—</div>
-                </div>
-                <div class="bigLine" id="activityName">—</div>
-                <div class="midLine" id="activityDetails">—</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="footer">
-            <span>© <span id="year"></span></span>
-            <span class="mono">vercel • lanyard • countapi</span>
-          </div>
-        </section>
-      </div>
+  <div class="card" id="activityCard">
+    <div class="cardTitle">
+      <h3>Activity</h3>
+      <div id="activityType">—</div>
     </div>
+    <div id="activityName">—</div>
+    <div id="activityDetails">—</div>
   </div>
-
-  <!-- TASKBAR -->
-  <div class="taskbar" id="taskbar">
-    <div class="tbLeft">
-      <div class="tbBtn" title="Start">
-        <div class="startMark" aria-hidden="true">
-          <span></span><span></span><span></span><span></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="tbCenter">
-      <div class="appBtn" id="appToggle" title="discord.exe">
-        <div class="appDot"></div>
-        <div class="appName">discord.exe</div>
-        <div class="appIndicator" aria-hidden="true"></div>
-      </div>
-    </div>
-
-    <div class="tbRight">
-      <div class="tray">
-        <div class="volBtn" id="muteBtn" title="Volume">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M11 5 7.5 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h3.5L11 19V5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-            <path id="wave1" d="M14.5 9.2c.6.7.9 1.7.9 2.8s-.3 2.1-.9 2.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            <path id="wave2" d="M16.8 7.2c1.1 1.2 1.7 2.9 1.7 4.8s-.6 3.6-1.7 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".9"/>
-          </svg>
-        </div>
-
-        <div class="volRange">
-          <input id="vol" type="range" min="0" max="100" value="5" />
-        </div>
-
-        <div class="clockBox">
-          <div class="clockTime mono" id="clock">--:--</div>
-          <div class="clockDate mono" id="date">--.--</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MP3 -->
-  <audio id="bgMusic" loop preload="auto">
-    <source src="/space-song-lyrics.mp3" type="audio/mpeg">
-  </audio>
+</div>
 
 <script>
-  const USER_ID = "1377987625129869373";
-  const COUNT_NAMESPACE = "my-bio-khaki";
-  const COUNT_KEY = "views";
-  const $ = (id) => document.getElementById(id);
+const USER_ID = "1377987625129869373";
+const $ = (id) => document.getElementById(id);
 
-  // ===== Lock copy / select / view-source shortcuts =====
-  (function lockDown(){
-    window.addEventListener("contextmenu", (e) => e.preventDefault(), { capture:true });
-    window.addEventListener("selectstart", (e) => e.preventDefault(), { capture:true });
-    window.addEventListener("dragstart", (e) => e.preventDefault(), { capture:true });
+function pickMainActivity(activities){
+  if(!Array.isArray(activities)) return null;
+  const filtered = activities.filter(a => a && a.name && a.type !== 4 && a.name !== "Spotify");
+  return filtered.find(a => a.type === 0) || filtered[0] || null;
+}
 
-    window.addEventListener("keydown", (e) => {
-      const k = (e.key || "").toLowerCase();
-      if (e.key === "F12") { e.preventDefault(); e.stopPropagation(); return; }
-      if (e.ctrlKey || e.metaKey) {
-        const blocked = ["u","s","p","c","x","v","a","f","i","j"];
-        if (blocked.includes(k)) {
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-      }
-    }, { capture:true });
+function formatActivity(a){
+  if(!a) return null;
+  const typeMap = {0:"Playing",1:"Streaming",2:"Listening",3:"Watching",5:"Competing"};
+  return {
+    type: typeMap[a.type] || "Activity",
+    name: a.name || "—",
+    details: [a.details, a.state].filter(Boolean).join(" • ") || "—"
+  };
+}
 
-    window.addEventListener("dblclick", (e) => e.preventDefault(), { capture:true });
-  })();
+async function loadDiscord(){
+  try{
+    const r = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`, { cache:"no-store" });
+    const j = await r.json();
+    const d = j?.data;
 
-  // clock + date
-  function setClock(){
-    const d = new Date();
-    $("clock").textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
-    $("date").textContent = String(d.getDate()).padStart(2,"0") + "." + String(d.getMonth()+1).padStart(2,"0");
-  }
-  function setUpdated(){
-    const d = new Date();
-    $("updated").textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
-  }
+    const mainA = pickMainActivity(d?.activities);
+    const card = $("activityCard");
 
-  // views
-  async function loadViews(){
-    try{
-      const r = await fetch(`https://api.countapi.xyz/hit/${encodeURIComponent(COUNT_NAMESPACE)}/${encodeURIComponent(COUNT_KEY)}`, { cache:"no-store" });
-      const j = await r.json();
-      $("views").textContent = (j.value ?? 0).toLocaleString();
-    }catch{
-      const k = "local_views_v1";
-      const n = (Number(localStorage.getItem(k)||0) + 1);
-      localStorage.setItem(k, String(n));
-      $("views").textContent = n.toLocaleString();
-    }
-  }
-
-  // status helpers
-  function statusLabel(s){
-    switch(s){
-      case "online": return "online";
-      case "idle": return "idle";
-      case "dnd": return "dnd";
-      default: return "offline";
-    }
-  }
-  function applyStatus(s){
-    const st = s || "offline";
-    $("pfpDot").className = st;
-    $("statusDot").className = "badgeDot " + st;
-    $("statusText").textContent = statusLabel(st);
-  }
-
-  // Pick activity (exclude Custom Status and Spotify)
-  function pickMainActivity(activities){
-    if(!Array.isArray(activities)) return null;
-    const filtered = activities.filter(a => a && a.name && a.type !== 4 && a.name !== "Spotify");
-    const playing = filtered.find(a => a.type === 0) || filtered[0];
-    return playing || null;
-  }
-
-  function formatActivity(a){
-    if(!a) return { type:"—", name:"—", details:"—" };
-    const typeMap = {0:"Playing",1:"Streaming",2:"Listening",3:"Watching",5:"Competing"};
-    const t = typeMap[a.type] || "Activity";
-    const name = a.name || "—";
-    const bits = [];
-    if(a.details) bits.push(a.details);
-    if(a.state) bits.push(a.state);
-    const details = bits.length ? bits.join(" • ") : "—";
-    return { type:t, name, details };
-  }
-
-  function formatCustomStatus(activities){
-    const cs = Array.isArray(activities) ? activities.find(a => a && a.type === 4) : null;
-    const emoji = cs?.emoji?.name ? cs.emoji.name + " " : "";
-    const text = cs?.state ? (emoji + cs.state) : (emoji ? emoji.trim() : "—");
-    return text || "—";
-  }
-
-  async function loadDiscord(){
-    try{
-      const r = await fetch(`https://api.lanyard.rest/v1/users/${USER_ID}`, { cache:"no-store" });
-      const j = await r.json();
-      const d = j?.data;
-
-      if(!d){
-        $("name").textContent = "unknown";
-        $("handle").textContent = "@discord";
-        applyStatus("offline");
-        $("customStatus").textContent = "—";
-        $("customStatus2").textContent = "—";
-        $("activityType").textContent = "—";
-        $("activityName").textContent = "—";
-        $("activityDetails").textContent = "—";
-        return;
-      }
-
-      const u = d.discord_user || {};
-      $("name").textContent = u.global_name || u.username || "user";
-      $("handle").textContent = u.username ? `@${u.username}` : "@discord";
-
-      if(u.id && u.avatar){
-        const ext = u.avatar.startsWith("a_") ? "gif" : "png";
-        $("pfp").src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${ext}?size=256`;
-      }else{
-        $("pfp").src = "https://cdn.discordapp.com/embed/avatars/0.png";
-      }
-
-      applyStatus(d.discord_status || "offline");
-
-      const custom = formatCustomStatus(d.activities);
-      $("customStatus").textContent = custom;
-      $("customStatus2").textContent = custom === "—" ? "no custom status set" : "custom status";
-
-      const mainA = pickMainActivity(d.activities);
+    if(!mainA){
+      card.classList.add("hidden");
+    } else {
+      card.classList.remove("hidden");
       const f = formatActivity(mainA);
       $("activityType").textContent = f.type;
       $("activityName").textContent = f.name;
       $("activityDetails").textContent = f.details;
-
-      setUpdated();
-    }catch{
-      applyStatus("offline");
     }
+
+  }catch{
+    $("activityCard").classList.add("hidden");
   }
+}
 
-  // audio + taskbar volume (default 5%)
-  const audio = $("bgMusic");
-  const vol = $("vol");
-  const muteBtn = $("muteBtn");
-  const wave1 = document.getElementById("wave1");
-  const wave2 = document.getElementById("wave2");
-
-  let lastVolume = 0.05;
-
-  function applyVolume(v01){
-    audio.volume = Math.max(0, Math.min(1, v01));
-    const pct = Math.round(audio.volume * 100);
-    vol.value = String(pct);
-
-    const muted = audio.muted || pct === 0;
-    wave1.style.opacity = muted ? "0" : "1";
-    wave2.style.opacity = muted ? "0" : ".9";
-  }
-
-  vol.addEventListener("input", () => {
-    const v = Number(vol.value) / 100;
-    audio.muted = false;
-    lastVolume = v || lastVolume;
-    applyVolume(v);
-  });
-
-  muteBtn.addEventListener("click", () => {
-    if(audio.muted || audio.volume === 0){
-      audio.muted = false;
-      applyVolume(lastVolume || 0.05);
-    }else{
-      lastVolume = audio.volume || lastVolume;
-      audio.muted = true;
-      applyVolume(audio.volume);
-    }
-  });
-
-  applyVolume(0.05);
-
-  // enter gate
-  async function enter(){
-    if(document.body.classList.contains("entered")) return;
-    document.body.classList.add("entered");
-
-    try{ await audio.play(); }catch(e){}
-
-    loadViews();
-    loadDiscord();
-  }
-  $("gate").addEventListener("click", enter);
-
-  // minimize / close (taskbar restores)
-  function minimize(){
-    document.body.classList.add("minimized");
-    document.body.classList.remove("closed");
-  }
-  function closeWindow(){
-    document.body.classList.add("closed");
-    document.body.classList.remove("minimized");
-  }
-  function restore(){
-    document.body.classList.remove("minimized");
-    document.body.classList.remove("closed");
-  }
-  function toggleFromTaskbar(){
-    if(!document.body.classList.contains("entered")) return;
-    const hidden = document.body.classList.contains("minimized") || document.body.classList.contains("closed");
-    if(hidden) restore();
-    else minimize();
-  }
-
-  // stop drag from stealing click on buttons
-  function stopDragSteal(el){
-    ["pointerdown","mousedown","touchstart"].forEach(ev=>{
-      el.addEventListener(ev, (e)=>{ e.stopPropagation(); }, {passive:true});
-    });
-  }
-  stopDragSteal($("btnMin"));
-  stopDragSteal($("btnClose"));
-
-  $("btnMin").addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); minimize(); });
-  $("btnClose").addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); closeWindow(); });
-  $("appToggle").addEventListener("click", toggleFromTaskbar);
-
-  // standard draggable window (no tilt/parallax)
-  const dragWrap = $("dragWrap");
-  const titlebar = $("titlebar");
-
-  let dragging=false, startX=0, startY=0, baseLeft=0, baseTop=0;
-  function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
-
-  titlebar.addEventListener("pointerdown", (e) => {
-    if(e.target.closest && e.target.closest(".winbtn")) return;
-    if(document.body.classList.contains("minimized") || document.body.classList.contains("closed")) return;
-
-    dragging = true;
-    titlebar.setPointerCapture(e.pointerId);
-
-    const rect = dragWrap.getBoundingClientRect();
-    startX = e.clientX; startY = e.clientY;
-
-    // freeze current position so it won't "jump"
-    dragWrap.style.left = rect.left + "px";
-    dragWrap.style.top  = rect.top + "px";
-    dragWrap.style.transform = "none";
-
-    baseLeft = rect.left; baseTop = rect.top;
-  });
-
-  titlebar.addEventListener("pointermove", (e) => {
-    if(!dragging) return;
-
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-
-    const winW = window.innerWidth;
-    const winH = window.innerHeight - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--taskbarH"));
-
-    const rect = dragWrap.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height;
-
-    let nextLeft = baseLeft + dx;
-    let nextTop  = baseTop + dy;
-
-    const margin = 10;
-    nextLeft = clamp(nextLeft, margin, winW - w - margin);
-    nextTop  = clamp(nextTop, margin, winH - h - margin);
-
-    dragWrap.style.left = nextLeft + "px";
-    dragWrap.style.top  = nextTop + "px";
-  });
-
-  titlebar.addEventListener("pointerup", () => dragging=false);
-  titlebar.addEventListener("pointercancel", () => dragging=false);
-
-  // init
-  $("year").textContent = new Date().getFullYear();
-  setClock();
-  setInterval(setClock, 10000);
-
-  setInterval(() => {
-    if(document.body.classList.contains("entered")) loadDiscord();
-  }, 15000);
+loadDiscord();
+setInterval(loadDiscord, 15000);
 </script>
+
 </body>
 </html>
